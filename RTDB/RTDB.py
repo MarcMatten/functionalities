@@ -1,5 +1,3 @@
-import pygame
-
 class RTDB:
     def __init__(self):
         print('RTDB initialised!')
