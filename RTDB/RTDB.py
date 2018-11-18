@@ -5,12 +5,18 @@ import irsdk
 class RTDB:
     def __init__(self):
         timeStr = time.strftime("%H:%M:%S", time.localtime())
+        self.initData = list()
         print(timeStr+': RTDB initialised!')
 
     def initialise(self, data):
         temp = list(data.items())
         for i in range(0,len(data)):
             self.__setattr__(temp[i][0], temp[i][1])
+        self.initData.extend(temp)
+
+    # def reinitialise(self):
+    #     for i in range(0,len(self.initData)):
+    #         self.__setattr__(self.initData[i][0], self.initData[i][1])
 
 # create thread to update RTDB
 class iRThread(threading.Thread):
