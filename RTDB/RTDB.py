@@ -14,6 +14,9 @@ class RTDB:
             self.__setattr__(temp[i][0], temp[i][1])
         self.initData.extend(temp)
 
+    def get(self, string):
+        return self.__getattribute__(string)
+
     # def reinitialise(self):
     #     for i in range(0,len(self.initData)):
     #         self.__setattr__(self.initData[i][0], self.initData[i][1])
