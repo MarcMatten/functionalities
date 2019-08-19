@@ -17,9 +17,14 @@ class RTDB:
     def get(self, string):
         return self.__getattribute__(string)
 
-    # def reinitialise(self):
-    #     for i in range(0,len(self.initData)):
-    #         self.__setattr__(self.initData[i][0], self.initData[i][1])
+    def reinitialise(self):
+        print(time.strftime("%H:%M:%S", time.localtime()) + ': reinitialise RTDB!')
+        self.StopDDU = True
+        for i in range(0,len(self.initData)):
+            self.__setattr__(self.initData[i][0], self.initData[i][1])
+        self.timeStr = time.strftime("%H:%M:%S", time.localtime())
+        print(time.strftime("%H:%M:%S", time.localtime()) + ': RTDB successfully reinitialised!')
+        self.StartDDU = True
 
 # create thread to update RTDB
 class iRThread(threading.Thread):
