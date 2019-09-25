@@ -10,7 +10,7 @@ class UpShiftTone(threading.Thread):
         self.rate = rate
         self.db = RTDB
         self.ShiftRPM = 20000
-        self.initialised = False
+        self.BInitialised = False
         self.fname = "files\Beep.wav"  # path to beep soundfile
         self.IsOnTrack = False
 
@@ -18,14 +18,8 @@ class UpShiftTone(threading.Thread):
         while 1:
             # execute this loop while iRacing is running
             while self.db.startUp:
-                if not self.initialised:
+                if not self.BInitialised and self.db.BUpshiftToneInitRequest:
                     self.initialise()
-                # two beeps sounds as notification when entering iRacing
-                if self.db.IsOnTrack and not self.IsOnTrack:
-                    self.IsOnTrack = True
-                    winsound.PlaySound(self.fname, winsound.SND_FILENAME)
-                    time.sleep(0.3)
-                    winsound.PlaySound(self.fname, winsound.SND_FILENAME)
 
                 # execute this loop while player is on track
                 while self.db.IsOnTrack and self.db.ShiftToneEnabled:
@@ -38,7 +32,7 @@ class UpShiftTone(threading.Thread):
                 if not self.db.IsOnTrack and self.IsOnTrack:
                     self.IsOnTrack = False
 
-            self.initialised = False
+            self.BInitialised = False
 
     def beep(self, shiftRPM):
         if self.db.RPM >= shiftRPM and self.db.UserShiftFlag[self.db.Gear - 1]:
@@ -72,6 +66,7 @@ class UpShiftTone(threading.Thread):
         time.sleep(0.3)
         winsound.PlaySound(self.fname, winsound.SND_FILENAME)
         time.sleep(0.3)
-        winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+        winsound.Beep(800, 150)
 
-        self.initialised = True
+        self.BInitialised = True
+        self.db.BUpshiftToneInitRequest = False
