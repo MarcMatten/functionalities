@@ -39,10 +39,10 @@ class iRThread(threading.Thread):
         while 1:
             self.db.startUp = self.ir.startup()
             if self.db.startUp:
-                self.ir.freeze_var_buffer_latest()
+                # self.ir.freeze_var_buffer_latest()
                 for i in range(0, len(self.keys)):
                     self.db.__setattr__(self.keys[i], self.ir[self.keys[i]])
-                self.ir.unfreeze_var_buffer_latest()
+                # self.ir.unfreeze_var_buffer_latest()
             else:
                 self.ir.shutdown()
             self.db.timeStr = time.strftime("%H:%M:%S", time.localtime())
