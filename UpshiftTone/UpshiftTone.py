@@ -36,12 +36,14 @@ class UpShiftTone(threading.Thread):
 
     def beep(self, shiftRPM):
         if self.db.RPM >= shiftRPM and self.db.UserShiftFlag[self.db.Gear - 1]:
-            winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+            #winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+            winsound.Beep(500, 150)
             time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
 
     def beep2(self):
         if self.db.RPM >= self.db.UserShiftRPM[self.db.Gear - 1] and self.db.UserShiftFlag[self.db.Gear - 1]:
-            winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+            #winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+            winsound.Beep(500, 150)
             time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
 
     def initialise(self):
@@ -62,9 +64,11 @@ class UpShiftTone(threading.Thread):
         self.db.iRShiftRPM = [self.FirstRPM, self.ShiftRPM, self.LastRPM, self.BlinkRPM]
 
         # play three beep sounds as notification
-        winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+        #winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+        winsound.Beep(500, 150)
         time.sleep(0.3)
-        winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+        #winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+        winsound.Beep(600, 150)
         time.sleep(0.3)
         winsound.Beep(800, 150)
 
