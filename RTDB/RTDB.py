@@ -1,6 +1,7 @@
 import threading
 import time
 import irsdk
+import json
 
 
 class RTDB:
@@ -29,6 +30,19 @@ class RTDB:
         self.timeStr = time.strftime("%H:%M:%S", time.localtime())
         print(time.strftime("%H:%M:%S", time.localtime()) + ': RTDB successfully reinitialised!')
         self.StartDDU = True
+
+    def snapshot(self):
+        nameStr = time.strftime("%Y_%m_%d-%H-%M-%S", time.localtime())+'_RTDBsnapshot.json'
+
+        variables = list(self.__dict__.keys())
+
+        data = {}
+
+        for i in range(0, len(variables)):
+            data[variables[i]] = self.__getattribute__(variables[i])
+
+        with open(nameStr, 'w') as outfile:
+            json.dump(data, outfile, indent=4)
 
 
 # create thread to update RTDB
