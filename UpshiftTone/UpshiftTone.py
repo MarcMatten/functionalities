@@ -3,13 +3,18 @@ import threading
 import time
 import winsound
 
+
 # UpShiftTone Thread
 class UpShiftTone(threading.Thread):
     def __init__(self, RTDB, rate):
         threading.Thread.__init__(self)
         self.rate = rate
         self.db = RTDB
+        self.FirstRPM = 20000
         self.ShiftRPM = 20000
+        self.LastRPM = 20000
+        self.BlinkRPM = 20000
+        self.DriverCarName = None
         self.BInitialised = False
         self.fname = "files\Beep.wav"  # path to beep soundfile
         self.IsOnTrack = False
@@ -36,13 +41,11 @@ class UpShiftTone(threading.Thread):
 
     def beep(self, shiftRPM):
         if self.db.RPM >= shiftRPM and self.db.UserShiftFlag[self.db.Gear - 1]:
-            #winsound.PlaySound(self.fname, winsound.SND_FILENAME)
             winsound.Beep(500, 150)
             time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
 
     def beep2(self):
         if self.db.RPM >= self.db.UserShiftRPM[self.db.Gear - 1] and self.db.UserShiftFlag[self.db.Gear - 1]:
-            #winsound.PlaySound(self.fname, winsound.SND_FILENAME)
             winsound.Beep(500, 150)
             time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
 
@@ -56,18 +59,18 @@ class UpShiftTone(threading.Thread):
         self.DriverCarName = self.db.DriverInfo['Drivers'][self.db.DriverInfo['DriverCarIdx']]['CarScreenNameShort']
 
         # self.db.DriverInfo['Drivers'][self.db.DriverInfo['DriverCarIdx']]['CarScreenNameShort']
-        print(self.db.timeStr+':First Shift RPM for', self.DriverCarName, ':', self.FirstRPM)
-        print(self.db.timeStr+':Shift RPM for', self.DriverCarName, ':', self.ShiftRPM)
-        print(self.db.timeStr+':Last Shift RPM for', self.DriverCarName, ':', self.LastRPM)
-        print(self.db.timeStr+':Blink Shift RPM for', self.DriverCarName, ':', self.BlinkRPM)
+        print(self.db.timeStr + ':First Shift RPM for', self.DriverCarName, ':', self.FirstRPM)
+        print(self.db.timeStr + ':Shift RPM for', self.DriverCarName, ':', self.ShiftRPM)
+        print(self.db.timeStr + ':Last Shift RPM for', self.DriverCarName, ':', self.LastRPM)
+        print(self.db.timeStr + ':Blink Shift RPM for', self.DriverCarName, ':', self.BlinkRPM)
 
         self.db.iRShiftRPM = [self.FirstRPM, self.ShiftRPM, self.LastRPM, self.BlinkRPM]
 
         # play three beep sounds as notification
-        #winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+        # winsound.PlaySound(self.fname, winsound.SND_FILENAME)
         winsound.Beep(500, 150)
         time.sleep(0.3)
-        #winsound.PlaySound(self.fname, winsound.SND_FILENAME)
+        # winsound.PlaySound(self.fname, winsound.SND_FILENAME)
         winsound.Beep(600, 150)
         time.sleep(0.3)
         winsound.Beep(800, 150)
