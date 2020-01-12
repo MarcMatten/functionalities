@@ -18,6 +18,7 @@ class UpShiftTone(threading.Thread):
         self.BInitialised = False
         self.fname = "files\Beep.wav"  # path to beep soundfile
         self.IsOnTrack = False
+        self.BeepTime = 0
 
     def run(self):
         while 1:
@@ -44,17 +45,26 @@ class UpShiftTone(threading.Thread):
     def beep(self, shiftRPM):
         if self.db.RPM >= shiftRPM and self.db.UserShiftFlag[self.db.Gear - 1]:
             self.db.Alarm2[7] = 3
-            winsound.Beep(500, 150)
-            time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
+            if self.db.SessionTime > (self.BeepTime + 0.75):
+                self.BeepTime = self.db.SessionTime
+                winsound.Beep(500, 150)
+        else:
+            self.db.Alarm2[7] = 0
+            # time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
 
     def beep2(self):
         if self.db.RPM >= self.db.UserShiftRPM[self.db.Gear - 1] and self.db.UserShiftFlag[self.db.Gear - 1]:
             self.db.Alarm2[7] = 3
-            winsound.Beep(500, 150)
-            time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
+            if self.db.SessionTime > (self.BeepTime + 0.75):
+                self.BeepTime = self.db.SessionTime
+                winsound.Beep(500, 150)
+        else:
+            self.db.Alarm2[7] = 0        
+            # time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
 
     def initialise(self):
         time.sleep(0.1)
+        self.BeepTime = 0
         # get optimal shift RPM from iRacing and display message
         self.FirstRPM = self.db.DriverInfo['DriverCarSLFirstRPM']
         self.ShiftRPM = self.db.DriverInfo['DriverCarSLShiftRPM']
