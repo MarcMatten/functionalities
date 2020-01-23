@@ -24,7 +24,7 @@ class UpShiftTone(threading.Thread):
         while 1:
             # execute this loop while iRacing is running
             while self.db.startUp:
-                if not self.BInitialised and self.db.BUpshiftToneInitRequest:
+                if not self.BInitialised or self.db.BUpshiftToneInitRequest:
                     self.initialise()
 
                 # execute this loop while player is on track
@@ -37,8 +37,8 @@ class UpShiftTone(threading.Thread):
                         self.db.Alarm2[7] = 0
 
                 # update flag when leaving track
-                if not self.db.IsOnTrack and self.IsOnTrack:
-                    self.IsOnTrack = False
+                # if not self.db.IsOnTrack and self.IsOnTrack:
+                #     self.IsOnTrack = False
 
             self.BInitialised = False
 
