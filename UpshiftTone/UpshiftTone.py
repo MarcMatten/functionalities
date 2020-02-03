@@ -34,7 +34,7 @@ class UpShiftTone(threading.Thread):
                     elif self.db.Gear > 0 and self.db.UpshiftStrategy == 4 and self.db.Throttle > 0.9:
                         self.beep2()
                     else:
-                        self.db.Alarm2[7] = 0
+                        self.db.Alarm[7] = 0
 
                 # update flag when leaving track
                 # if not self.db.IsOnTrack and self.IsOnTrack:
@@ -43,23 +43,23 @@ class UpShiftTone(threading.Thread):
             self.BInitialised = False
 
     def beep(self, shiftRPM):
-        if self.db.RPM >= shiftRPM and self.db.UserShiftFlag[self.db.Gear - 1]:
-            self.db.Alarm2[7] = 3
+        if self.db.RPM >= shiftRPM and self.db.UserShiftFlag[self.db.Gear - 1] and self.db.Speed > 20:
+            self.db.Alarm[7] = 3
             if self.db.SessionTime > (self.BeepTime + 0.75):
-                self.BeepTime = self.db.SessionTime
                 winsound.Beep(500, 150)
+                self.BeepTime = self.db.SessionTime
         else:
-            self.db.Alarm2[7] = 0
+            self.db.Alarm[7] = 0
             # time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
 
     def beep2(self):
-        if self.db.RPM >= self.db.UserShiftRPM[self.db.Gear - 1] and self.db.UserShiftFlag[self.db.Gear - 1]:
-            self.db.Alarm2[7] = 3
+        if self.db.RPM >= self.db.UserShiftRPM[self.db.Gear - 1] and self.db.UserShiftFlag[self.db.Gear - 1] and self.db.Speed > 20:
+            self.db.Alarm[7] = 3
             if self.db.SessionTime > (self.BeepTime + 0.75):
-                self.BeepTime = self.db.SessionTime
                 winsound.Beep(500, 150)
+                self.BeepTime = self.db.SessionTime
         else:
-            self.db.Alarm2[7] = 0        
+            self.db.Alarm[7] = 0
             # time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
 
     def initialise(self):
