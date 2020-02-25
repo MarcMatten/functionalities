@@ -2,6 +2,7 @@ import threading
 import time
 import irsdk
 import json
+from libs import Car, Track
 
 
 class RTDB:
@@ -32,17 +33,49 @@ class RTDB:
         self.StartDDU = True
 
     def snapshot(self):
-        nameStr = time.strftime("%Y_%m_%d-%H-%M-%S", time.localtime())+'_RTDBsnapshot.json'
+        nameStr = time.strftime('snapshots/' + "%Y_%m_%d-%H-%M-%S", time.localtime())+'_RTDBsnapshot'
 
         variables = list(self.__dict__.keys())
+        variables.remove('car')
+        variables.remove('track')
+
+        self.car.saveJson(self.dir, nameStr+'_car')
+        self.track.saveJson(self.dir, nameStr+'_track')
+
+        self.WeekendInfo['WeekendOptions']['Date'] = str(self.WeekendInfo['WeekendOptions']['Date'])
 
         data = {}
 
         for i in range(0, len(variables)):
             data[variables[i]] = self.__getattribute__(variables[i])
 
-        with open(nameStr, 'w') as outfile:
+        with open(nameStr+'.json', 'w') as outfile:
             json.dump(data, outfile, indent=4)
+
+        print(time.strftime("%H:%M:%S", time.localtime()) + ': Saved snapshot: ' + nameStr+'.json')
+
+    def loadSnapshot(self, name):
+        path = self.dir + '\\snapshots\\' + name
+
+        self.StopDDU = True
+        self.StartDDU = True
+
+        with open(path + '.json') as f:
+            data = json.loads(f.read())
+
+        carPath = path + '_car.json'
+        self.car = Car.Car('default')
+        self.car.loadJson(carPath)
+
+        trackPath = path + '_track.json'
+        self.track = Track.Track('default')
+        self.track.loadJson(trackPath)
+        self.map = self.track.map
+
+        self.initialise(data)
+
+        self.StopDDU = True
+        self.StartDDU = True
 
 
 # create thread to update RTDB
