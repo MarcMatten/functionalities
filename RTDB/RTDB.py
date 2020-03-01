@@ -74,8 +74,7 @@ class RTDB:
 
         self.initialise(data)
 
-        self.StopDDU = True
-        self.StartDDU = True
+        print(time.strftime("%H:%M:%S", time.localtime()) + ': Loaded RTDB snapshot: ' + name +'.json')
 
 
 # create thread to update RTDB
