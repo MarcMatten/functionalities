@@ -1,7 +1,7 @@
-# import all required packages
 import threading
 import time
 import winsound
+import irsdk
 
 
 class UpShiftTone(threading.Thread):
@@ -19,64 +19,61 @@ class UpShiftTone(threading.Thread):
         self.tBeep = 0
         self.BShiftTone = False
         self.oldGear = 0
+        self.ir = irsdk.IRSDK()
 
     def run(self):
         while 1:
             # execute this loop while iRacing is running
-            while self.db.startUp:
+            while self.ir.startup():
                 if not self.BInitialised or self.db.BUpshiftToneInitRequest:
                     self.initialise()
 
                 # execute this loop while player is on track
-                while self.db.IsOnTrack and self.db.ShiftToneEnabled:
+                while self.ir['IsOnTrack'] and self.db.ShiftToneEnabled:
                     t = time.time()
-                    if self.db.Gear > 0 and self.db.UpshiftStrategy < 4 and self.db.Throttle > 0.9:
+                    if self.ir['Gear'] > 0 and self.db.UpshiftStrategy < 4 and self.ir['Throttle'] > 0.9:
                         self.beep(self.db.iRShiftRPM[self.db.UpshiftStrategy])
-                    elif self.db.Gear > 0 and self.db.UpshiftStrategy == 4 and self.db.Throttle > 0.9:
+                    elif self.ir['Gear'] > 0 and self.db.UpshiftStrategy == 4 and self.ir['Throttle'] > 0.9:
                         self.beep2()
                     else:
                         self.db.Alarm[7] = 0
                     
-                    if (not self.oldGear == self.db.Gear) and self.BShiftTone:
+                    if (not self.oldGear == self.ir['Gear']) and self.BShiftTone:
                         tShiftReaction = max(time.time() - self.tBeep, 0)
                         if tShiftReaction > 1:
                             self.db.tShiftReaction = float('nan')
                         else:
                             self.db.tShiftReaction = tShiftReaction
 
-                    # if not self.oldGear == self.db.Gear:
-                    #     if 0 < self.oldGear < self.db.Gear and self.BShiftTone:
-                    #         self.db.tShiftReaction = max(min(time.time() - self.tBeep, 2), 0)
-
                         self.BShiftTone = False
 
-                    if self.db.Gear > 0:
-                        self.oldGear = self.db.Gear
+                    if self.ir['Gear'] > 0:
+                        self.oldGear = self.ir['Gear']
                     
                     self.db.tExecuteUpshiftTone = time.time() - t
 
             self.BInitialised = False
 
     def beep(self, shiftRPM):
-        if self.db.RPM >= shiftRPM and self.db.UserShiftFlag[self.db.Gear - 1] and self.db.Speed > 20:
+        if self.ir['RPM'] >= shiftRPM and self.db.UserShiftFlag[self.ir['Gear'] - 1] and self.ir['Speed'] > 20:
             self.db.Alarm[7] = 3
             if time.time() > (self.tBeep + 0.75):
                 winsound.Beep(500, 150)
                 self.tBeep = time.time()
                 
-                if (not self.BShiftTone) and self.oldGear == self.db.Gear:
+                if (not self.BShiftTone) and self.oldGear == self.ir['Gear']:
                     self.BShiftTone = True
         else:
             self.db.Alarm[7] = 0
 
     def beep2(self):
-        if self.db.RPM >= self.db.UserShiftRPM[self.db.Gear - 1] and self.db.UserShiftFlag[self.db.Gear - 1] and self.db.Speed > 20:
+        if self.ir['RPM'] >= self.db.UserShiftRPM[self.ir['Gear'] - 1] and self.db.UserShiftFlag[self.ir['Gear'] - 1] and self.ir['Speed'] > 20:
             self.db.Alarm[7] = 3
             if time.time() > (self.tBeep + 0.75):
                 winsound.Beep(500, 150)
                 self.tBeep = time.time()
 
-                if (not self.BShiftTone) and self.oldGear == self.db.Gear:
+                if (not self.BShiftTone) and self.oldGear == self.ir['Gear']:
                     self.BShiftTone = True
         else:
             self.db.Alarm[7] = 0
