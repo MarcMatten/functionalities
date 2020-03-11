@@ -90,6 +90,7 @@ class iRThread(threading.Thread):
 
     def run(self):
         while 1:
+            t = time.time()
             self.db.startUp = self.ir.startup()
             if self.db.startUp:
                 self.ir.freeze_var_buffer_latest()
@@ -99,4 +100,5 @@ class iRThread(threading.Thread):
             else:
                 self.ir.shutdown()
             self.db.timeStr = time.strftime("%H:%M:%S", time.localtime())
+            self.db.tExecuteRTDB = time.time() - t
             time.sleep(self.rate)
