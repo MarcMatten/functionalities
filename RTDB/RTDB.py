@@ -100,5 +100,5 @@ class iRThread(threading.Thread):
             else:
                 self.ir.shutdown()
             self.db.timeStr = time.strftime("%H:%M:%S", time.localtime())
-            self.db.tExecuteRTDB = time.time() - t
+            self.db.tExecuteRTDB = (time.time() - t) * 1000
             time.sleep(self.rate)
