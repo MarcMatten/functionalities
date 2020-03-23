@@ -51,6 +51,8 @@ class UpShiftTone(threading.Thread):
                         self.oldGear = self.ir['Gear']
                     
                     self.db.tExecuteUpshiftTone = (time.perf_counter() - t) * 1000
+                    
+                    time.sleep(self.rate)
 
             self.BInitialised = False
 
