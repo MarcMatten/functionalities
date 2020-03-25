@@ -54,6 +54,10 @@ class UpShiftTone(threading.Thread):
                     
                     time.sleep(self.rate)
 
+                time.sleep(0.2)
+
+            time.sleep(1)
+
             self.BInitialised = False
 
     def beep(self, shiftRPM):
