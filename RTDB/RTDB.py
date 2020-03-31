@@ -3,6 +3,7 @@ import time
 import irsdk
 import json
 from libs import Car, Track
+import os
 
 
 class RTDB:
@@ -36,6 +37,9 @@ class RTDB:
         self.StartDDU = True
 
     def snapshot(self):
+        if not os.path.exists("snapshots/"):
+            os.mkdir("snapshots/")
+
         nameStr = time.strftime('snapshots/' + "%Y_%m_%d-%H-%M-%S", time.localtime())+'_RTDBsnapshot'
 
         variables = list(self.__dict__.keys())
