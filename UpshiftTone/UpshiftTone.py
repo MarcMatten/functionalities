@@ -93,7 +93,7 @@ class UpShiftTone(threading.Thread):
         self.ShiftRPM = self.db.DriverInfo['DriverCarSLShiftRPM']
         self.LastRPM = self.db.DriverInfo['DriverCarSLLastRPM']
         self.BlinkRPM = self.db.DriverInfo['DriverCarSLBlinkRPM']
-        self.DriverCarName = self.db.DriverInfo['Drivers'][self.db.DriverInfo['DriverCarIdx']]['CarScreenNameShort']
+        self.DriverCarName = self.db.DriverInfo['Drivers'][self.db.DriverCarIdx]['CarScreenNameShort']
 
         print(self.db.timeStr + ':First Shift RPM for', self.DriverCarName, ':', self.FirstRPM)
         print(self.db.timeStr + ':Shift RPM for', self.DriverCarName, ':', self.ShiftRPM)

@@ -101,6 +101,12 @@ class iRThread(threading.Thread):
                 for i in range(0, len(self.db.queryData)):
                     self.db.__setattr__(self.db.queryData[i], self.ir[self.db.queryData[i]])
                 # self.ir.unfreeze_var_buffer_latest()
+
+                # Mapping CarIdx for DriverInfo['Drivers']
+                self.db.CarIdxMap = [None]*64
+                for i in range(0, len(self.db.DriverInfo['Drivers'])):
+                    self.db.CarIdxMap[self.db.DriverInfo['Drivers'][i]['CarIdx']] = i
+
             else:
                 self.ir.shutdown()
             self.db.timeStr = time.strftime("%H:%M:%S", time.localtime())
