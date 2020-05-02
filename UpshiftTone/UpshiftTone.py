@@ -31,6 +31,10 @@ class UpShiftTone(threading.Thread):
                 # execute this loop while player is on track
                 while self.ir['IsOnTrack'] and self.db.ShiftToneEnabled:
                     t = time.perf_counter()
+                    if self.db.BLiftToneRequest:
+                        winsound.Beep(300, 150)
+                        self.db.BLiftToneRequest = False
+
                     if self.ir['Gear'] > 0 and self.db.UpshiftStrategy < 4 and self.ir['Throttle'] > 0.9:
                         self.beep(self.db.iRShiftRPM[self.db.UpshiftStrategy])
                     elif self.ir['Gear'] > 0 and self.db.UpshiftStrategy == 4 and self.ir['Throttle'] > 0.9:
