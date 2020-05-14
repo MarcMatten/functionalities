@@ -36,7 +36,8 @@ class UpShiftTone(threading.Thread):
                             winsound.Beep(300, 150)
                             self.db.BLiftToneRequest = False
                             continue  # no shift beep when lift beep
-                        if self.db.tNextLiftPoint < 2:
+                        if self.db.tNextLiftPoint < 2 and len(self.db.LapDistPctLift) > 0:
+                            time.sleep(self.rate)
                             continue  # no shift beep when close to lift beep
 
 
