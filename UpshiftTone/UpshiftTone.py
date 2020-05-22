@@ -32,7 +32,7 @@ class UpShiftTone(threading.Thread):
                 while self.ir['IsOnTrack'] and self.db.ShiftToneEnabled:
                     t = time.perf_counter()
                     if self.db.BLiftToneRequest:
-                        winsound.Beep(300, 150)
+                        winsound.Beep(self.db.fFuelBeep, self.db.tFuelBeep)
                         self.db.BLiftToneRequest = False
 
                     if self.ir['Gear'] > 0 and self.db.UpshiftStrategy < 4 and self.ir['Throttle'] > 0.9:
@@ -68,7 +68,7 @@ class UpShiftTone(threading.Thread):
         if self.ir['RPM'] >= shiftRPM and self.db.UserShiftFlag[self.ir['Gear'] - 1] and self.ir['Speed'] > 20:
             self.db.Alarm[7] = 3
             if time.time() > (self.tBeep + 0.75):
-                winsound.Beep(500, 150)
+                winsound.Beep(self.db.fShiftBeep, self.db.tShiftBeep)
                 self.tBeep = time.time()
                 
                 if (not self.BShiftTone) and self.oldGear == self.ir['Gear']:
@@ -80,7 +80,7 @@ class UpShiftTone(threading.Thread):
         if self.ir['RPM'] >= self.db.UserShiftRPM[self.ir['Gear'] - 1] and self.db.UserShiftFlag[self.ir['Gear'] - 1] and self.ir['Speed'] > 20:
             self.db.Alarm[7] = 3
             if time.time() > (self.tBeep + 0.75):
-                winsound.Beep(500, 150)
+                winsound.Beep(self.db.fShiftBeep, self.db.tShiftBeep)
                 self.tBeep = time.time()
 
                 if (not self.BShiftTone) and self.oldGear == self.ir['Gear']:
