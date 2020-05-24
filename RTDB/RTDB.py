@@ -4,7 +4,19 @@ import irsdk
 import json
 from libs import Car, Track
 import os
+import numpy as np
 
+
+class NumpyArrayEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(NumpyArrayEncoder, self).default(obj)
 
 class RTDB:
     def __init__(self):
@@ -57,7 +69,7 @@ class RTDB:
             data[variables[i]] = self.__getattribute__(variables[i])
 
         with open(nameStr+'.json', 'w') as outfile:
-            json.dump(data, outfile, indent=4)
+            json.dump(data, outfile, indent=4, cls=NumpyArrayEncoder)
 
         print(time.strftime("%H:%M:%S", time.localtime()) + ': Saved snapshot: ' + nameStr+'.json')
 
@@ -112,3 +124,4 @@ class iRThread(threading.Thread):
             self.db.timeStr = time.strftime("%H:%M:%S", time.localtime())
             self.db.tExecuteRTDB = (time.perf_counter() - t) * 1000
             time.sleep(self.rate)
+
