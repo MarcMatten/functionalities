@@ -95,6 +95,16 @@ class RTDB:
 
         print(time.strftime("%H:%M:%S", time.localtime()) + ': Loaded RTDB snapshot: ' + name +'.json')
 
+    def loadFuelTgt(self, path):
+        with open(path) as jsonFile:
+            data = json.loads(jsonFile.read())
+
+        temp = list(data.items())
+        for i in range(0, len(data)):
+            self.FuelTGTLiftPoints.__setitem__(temp[i][0], temp[i][1])
+
+        print(time.strftime("%H:%M:%S", time.localtime()) + ':\tImported ' + path)
+
 
 # create thread to update RTDB
 class iRThread(threading.Thread):
@@ -124,4 +134,3 @@ class iRThread(threading.Thread):
             self.db.timeStr = time.strftime("%H:%M:%S", time.localtime())
             self.db.tExecuteRTDB = (time.perf_counter() - t) * 1000
             time.sleep(self.rate)
-
