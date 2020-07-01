@@ -4,7 +4,19 @@ import irsdk
 import json
 from libs import Car, Track
 import os
+import numpy as np
 
+
+class NumpyArrayEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(NumpyArrayEncoder, self).default(obj)
 
 class RTDB:
     def __init__(self):
@@ -57,7 +69,7 @@ class RTDB:
             data[variables[i]] = self.__getattribute__(variables[i])
 
         with open(nameStr+'.json', 'w') as outfile:
-            json.dump(data, outfile, indent=4)
+            json.dump(data, outfile, indent=4, cls=NumpyArrayEncoder)
 
         print(time.strftime("%H:%M:%S", time.localtime()) + ': Saved snapshot: ' + nameStr+'.json')
 
@@ -82,6 +94,16 @@ class RTDB:
         self.initialise(data, False)
 
         print(time.strftime("%H:%M:%S", time.localtime()) + ': Loaded RTDB snapshot: ' + name +'.json')
+
+    def loadFuelTgt(self, path):
+        with open(path) as jsonFile:
+            data = json.loads(jsonFile.read())
+
+        temp = list(data.items())
+        for i in range(0, len(data)):
+            self.FuelTGTLiftPoints.__setitem__(temp[i][0], temp[i][1])
+
+        print(time.strftime("%H:%M:%S", time.localtime()) + ':\tImported ' + path)
 
 
 # create thread to update RTDB
