@@ -70,15 +70,10 @@ def getShiftRPM(dirPath):
 
     plt.ioff()
     plt.figure(figsize=(8, 5))
-    # plt.close()
     plt.grid()
     plt.scatter(d['vCar'][d['BShiftRPM']], d['gLong'][d['BShiftRPM']])
     plt.xlabel('vCar [m/s]')
     plt.ylabel('gLong [m/s²]')
-    # plt.legend()
-    # plt.tight_layout()
-    # plt.show(block=False)
-    # plt.title('Title')
     plt.xlim(0, np.max(d['vCar'][d['BShiftRPM']]) + 5)
     plt.ylim(0, np.max(d['gLong'][d['BShiftRPM']]) + 1)
 
@@ -135,15 +130,10 @@ def getShiftRPM(dirPath):
     plt.savefig(resultsDirPath + '/gLong_vs_speed.png', dpi=300, orientation='landscape', progressive=True)
 
     plt.figure()
-    # plt.close()
     plt.scatter(d['vCar'][d['BShiftRPM']], d['RPM'][d['BShiftRPM']])
-    # plt.scatter(d['vCar'][d['BRPMRange']], d['RPM'][d['BRPMRange']])
     plt.grid()
     plt.xlabel('vCar [m/s]')
     plt.ylabel('nMotor [RPM]')
-    # plt.legend()
-    # plt.show(block=False)
-    # plt.title('Title')
     plt.xlim(0, np.max(d['vCar'][d['BShiftRPM']]) + 5)
     plt.ylim(0, np.max(d['RPM'][d['BShiftRPM']]) + 500)
 
@@ -162,51 +152,9 @@ def getShiftRPM(dirPath):
 
     plt.savefig(resultsDirPath + '/RPM_vs_speed.png', dpi=300, orientation='landscape', progressive=True)
 
-
-    # create folder with car setup and date in name
-    # save figures
-
-    # plt.savefig('test', dpi=300, facecolor='w', edgecolor='w',
-    #             orientation='portrait', papertype='a4', format=None,
-    #             transparent=False, bbox_inches=None, pad_inches=0.1,
-    #             metadata=None)
-
     # save so car file
     car.setShiftRPM(nMotorShiftOptimal, vCarShiftOptimal, nMotorShiftTarget, vCarShiftTarget, NGear[0:-1])
     car.saveJson(carPath)
 
     print(time.strftime("%H:%M:%S", time.localtime()) + ':\tCompleted Upshift calculation!')
 
-    # return nMotorShiftOptimal, vCarShiftOptimal, nMotorShiftTarget, vCarShiftTarget, NGear[0:-1]
-
-
-# def calc():
-#     root = tk.Tk()
-#     root.withdraw()
-#     MyIbtPath = filedialog.askopenfilename(initialdir="C:/Users/Marc/Documents/Projekte/SimRacingTools/FuelSavingOptimiser", title="Select IBT file",
-#                                            filetypes=(("IBT files", "*.ibt"), ("all files", "*.*")))
-#
-#     # nMotorShiftOpt, vCarShiftOpt, nMotorShift, vCarShift, ngear = getShiftRPM(MyIbtPath, 0.25)
-#
-#     print('Done')
-
-
-
-
-
-# MyIbtPath = 'C:/Users/Marc/Documents/Projekte/SimRacingTools/FuelSavingOptimiser/porsche718gt4_indianapolis oval 2020-06-17 22-36-30.ibt'
-# MyIbtPath = 'M:/07 - SimRacing/Data/bmwz4gt3_indianapolis ovalindypit 2020-01-06 18-29-20.ibt'
-# MyIbtPath = 'M:/07 - SimRacing/Data/porsche911cup_indianapolis oval 2020-01-26 15-49-03.ibt'
-# MyIbtPath = 'M:/07 - SimRacing/Data/hpdarx01c_indianapolis oval 2020-04-08 20-26-09.ibt'
-# root = tk.Tk()
-# root.withdraw()
-# MyIbtPath = filedialog.askopenfilename(initialdir="C:/Users/Marc/Documents/Projekte/SimRacingTools/FuelSavingOptimiser", title="Select IBT file", filetypes=(("IBT files", "*.ibt"), ("all files", "*.*")))
-#
-# nMotorShiftOpt, vCarShiftOpt, nMotorShift, vCarShift, ngear = getShiftRPM(MyIbtPath, 0.25)
-#
-# print('vCarShiftOptimal: ', vCarShiftOpt)
-# print('nMotorShiftOptimal: ', nMotorShiftOpt)
-# print('vCarShift: ', vCarShift)
-# print('nMotorShift: ', nMotorShift)
-#
-# print('Done')
