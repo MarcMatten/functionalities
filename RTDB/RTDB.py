@@ -2,22 +2,39 @@ import threading
 import time
 import irsdk
 import json
+from libs import Car, Track
+import os
+import numpy as np
 
+
+class NumpyArrayEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(NumpyArrayEncoder, self).default(obj)
 
 class RTDB:
     def __init__(self):
         timeStr = time.strftime("%H:%M:%S", time.localtime())
         self.initData = list()
+        self.queryData = list()
         self.StopDDU = True
         self.StartDDU = False
         self.timeStr = time.strftime("%H:%M:%S", time.localtime())
         print(timeStr + ': RTDB initialised!')
 
-    def initialise(self, data):
+    def initialise(self, data, BQueryData):
         temp = list(data.items())
         for i in range(0, len(data)):
             self.__setattr__(temp[i][0], temp[i][1])
         self.initData.extend(temp)
+        if BQueryData:
+            self.queryData.extend(list(data.keys()))
 
     def get(self, string):
         return self.__getattribute__(string)
@@ -32,37 +49,88 @@ class RTDB:
         self.StartDDU = True
 
     def snapshot(self):
-        nameStr = time.strftime("%Y_%m_%d-%H-%M-%S", time.localtime())+'_RTDBsnapshot.json'
+        if not os.path.exists("snapshots/"):
+            os.mkdir("snapshots/")
+
+        nameStr = time.strftime('snapshots/' + "%Y_%m_%d-%H-%M-%S", time.localtime())+'_RTDBsnapshot'
 
         variables = list(self.__dict__.keys())
+        variables.remove('car')
+        variables.remove('track')
+
+        self.car.saveJson(self.dir, nameStr+'_car')
+        self.track.saveJson(self.dir, nameStr+'_track')
+
+        self.WeekendInfo['WeekendOptions']['Date'] = str(self.WeekendInfo['WeekendOptions']['Date'])
 
         data = {}
 
         for i in range(0, len(variables)):
             data[variables[i]] = self.__getattribute__(variables[i])
 
-        with open(nameStr, 'w') as outfile:
-            json.dump(data, outfile, indent=4)
+        with open(nameStr+'.json', 'w') as outfile:
+            json.dump(data, outfile, indent=4, cls=NumpyArrayEncoder)
+
+        print(time.strftime("%H:%M:%S", time.localtime()) + ': Saved snapshot: ' + nameStr+'.json')
+
+    def loadSnapshot(self, name):
+        path = self.dir + '\\snapshots\\' + name
+
+        self.StopDDU = True
+        self.StartDDU = True
+
+        with open(path + '.json') as f:
+            data = json.loads(f.read())
+
+        carPath = path + '_car.json'
+        self.car = Car.Car('default')
+        self.car.loadJson(carPath)
+
+        trackPath = path + '_track.json'
+        self.track = Track.Track('default')
+        self.track.loadJson(trackPath)
+        self.map = self.track.map
+
+        self.initialise(data, False)
+
+        print(time.strftime("%H:%M:%S", time.localtime()) + ': Loaded RTDB snapshot: ' + name +'.json')
+
+    def loadFuelTgt(self, path):
+        with open(path) as jsonFile:
+            data = json.loads(jsonFile.read())
+
+        temp = list(data.items())
+        for i in range(0, len(data)):
+            self.FuelTGTLiftPoints.__setitem__(temp[i][0], temp[i][1])
+
+        print(time.strftime("%H:%M:%S", time.localtime()) + ':\tImported ' + path)
 
 
 # create thread to update RTDB
 class iRThread(threading.Thread):
-    def __init__(self, rtdbObj, keys, rate):
+    def __init__(self, rtdbObj, rate):
         threading.Thread.__init__(self)
         self.rate = rate
         self.db = rtdbObj
-        self.keys = keys
         self.ir = irsdk.IRSDK()
 
     def run(self):
         while 1:
+            t = time.perf_counter()
             self.db.startUp = self.ir.startup()
             if self.db.startUp:
-                self.ir.freeze_var_buffer_latest()
-                for i in range(0, len(self.keys)):
-                    self.db.__setattr__(self.keys[i], self.ir[self.keys[i]])
-                self.ir.unfreeze_var_buffer_latest()
+                # self.ir.freeze_var_buffer_latest()
+                for i in range(0, len(self.db.queryData)):
+                    self.db.__setattr__(self.db.queryData[i], self.ir[self.db.queryData[i]])
+                # self.ir.unfreeze_var_buffer_latest()
+
+                # Mapping CarIdx for DriverInfo['Drivers']
+                self.db.CarIdxMap = [None]*64
+                for i in range(0, len(self.db.DriverInfo['Drivers'])):
+                    self.db.CarIdxMap[self.db.DriverInfo['Drivers'][i]['CarIdx']] = i
+
             else:
                 self.ir.shutdown()
             self.db.timeStr = time.strftime("%H:%M:%S", time.localtime())
+            self.db.tExecuteRTDB = (time.perf_counter() - t) * 1000
             time.sleep(self.rate)

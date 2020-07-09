@@ -1,10 +1,9 @@
-# import all required packages
 import threading
 import time
 import winsound
+import irsdk
 
 
-# UpShiftTone Thread
 class UpShiftTone(threading.Thread):
     def __init__(self, RTDB, rate):
         threading.Thread.__init__(self)
@@ -14,51 +13,98 @@ class UpShiftTone(threading.Thread):
         self.ShiftRPM = 20000
         self.LastRPM = 20000
         self.BlinkRPM = 20000
-        self.DriverCarName = None
+        self.DriverCarName = ''
         self.BInitialised = False
-        self.fname = "files\Beep.wav"  # path to beep soundfile
         self.IsOnTrack = False
+        self.tBeep = 0
+        self.BShiftTone = False
+        self.oldGear = 0
+        self.ir = irsdk.IRSDK()
 
     def run(self):
         while 1:
             # execute this loop while iRacing is running
-            while self.db.startUp:
-                if not self.BInitialised and self.db.BUpshiftToneInitRequest:
+            while self.ir.startup():
+                if not self.BInitialised or self.db.BUpshiftToneInitRequest:
                     self.initialise()
 
                 # execute this loop while player is on track
-                while self.db.IsOnTrack and self.db.ShiftToneEnabled:
-                    if self.db.Gear > 0 and self.db.UpshiftStrategy < 4 and self.db.Throttle > 0.9:
-                        self.beep(self.db.iRShiftRPM[self.db.UpshiftStrategy])
-                    elif self.db.Gear > 0 and self.db.UpshiftStrategy == 4 and self.db.Throttle > 0.9:
-                        self.beep2()
+                while self.ir['IsOnTrack'] and self.db.ShiftToneEnabled:
+                    t = time.perf_counter()
+                    if self.db.BEnableLiftTones:
+                        if self.db.BLiftToneRequest:
+                            winsound.Beep(self.db.fFuelBeep, self.db.tFuelBeep)
+                            self.db.BLiftToneRequest = False
+                            continue  # no shift beep when lift beep
+                        if self.db.tNextLiftPoint < 2 and len(self.db.LapDistPctLift) > 0:
+                            time.sleep(self.rate)
+                            continue  # no shift beep when close to lift beep
 
-                # update flag when leaving track
-                if not self.db.IsOnTrack and self.IsOnTrack:
-                    self.IsOnTrack = False
+
+                    if self.ir['Gear'] > 0 and self.db.UpshiftStrategy < 4 and self.ir['Throttle'] > 0.9:
+                        self.beep(self.db.iRShiftRPM[self.db.UpshiftStrategy])
+                    elif self.ir['Gear'] > 0 and self.db.UpshiftStrategy == 4 and self.ir['Throttle'] > 0.9:
+                        self.beep2()
+                    else:
+                        self.db.Alarm[7] = 0
+                    
+                    if (not self.oldGear == self.ir['Gear']) and self.BShiftTone:
+                        tShiftReaction = max(time.time() - self.tBeep, 0)
+                        if tShiftReaction > 1:
+                            self.db.tShiftReaction = float('nan')
+                        else:
+                            self.db.tShiftReaction = tShiftReaction
+
+                        self.BShiftTone = False
+
+                    if self.ir['Gear'] > 0:
+                        self.oldGear = self.ir['Gear']
+                    
+                    self.db.tExecuteUpshiftTone = (time.perf_counter() - t) * 1000
+                    
+                    time.sleep(self.rate)
+
+                time.sleep(0.2)
+
+            time.sleep(1)
 
             self.BInitialised = False
 
     def beep(self, shiftRPM):
-        if self.db.RPM >= shiftRPM and self.db.UserShiftFlag[self.db.Gear - 1]:
-            winsound.Beep(500, 150)
-            time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
+        if self.ir['RPM'] >= shiftRPM and self.db.UserShiftFlag[self.ir['Gear'] - 1] and self.ir['Speed'] > 20:
+            self.db.Alarm[7] = 3
+            if time.time() > (self.tBeep + 0.75):
+                winsound.Beep(self.db.fShiftBeep, self.db.tShiftBeep)
+                self.tBeep = time.time()
+                
+                if (not self.BShiftTone) and self.oldGear == self.ir['Gear']:
+                    self.BShiftTone = True
+        else:
+            self.db.Alarm[7] = 0
 
     def beep2(self):
-        if self.db.RPM >= self.db.UserShiftRPM[self.db.Gear - 1] and self.db.UserShiftFlag[self.db.Gear - 1]:
-            winsound.Beep(500, 150)
-            time.sleep(0.75)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
+        if self.ir['RPM'] >= self.db.UserShiftRPM[self.ir['Gear'] - 1] and self.db.UserShiftFlag[self.ir['Gear'] - 1] and self.ir['Speed'] > 20:
+            self.db.Alarm[7] = 3
+            if time.time() > (self.tBeep + 0.75):
+                winsound.Beep(self.db.fShiftBeep, self.db.tShiftBeep)
+                self.tBeep = time.time()
+
+                if (not self.BShiftTone) and self.oldGear == self.ir['Gear']:
+                    self.BShiftTone = True
+        else:
+            self.db.Alarm[7] = 0
 
     def initialise(self):
         time.sleep(0.1)
+        self.tBeep = 0
+
         # get optimal shift RPM from iRacing and display message
         self.FirstRPM = self.db.DriverInfo['DriverCarSLFirstRPM']
         self.ShiftRPM = self.db.DriverInfo['DriverCarSLShiftRPM']
         self.LastRPM = self.db.DriverInfo['DriverCarSLLastRPM']
         self.BlinkRPM = self.db.DriverInfo['DriverCarSLBlinkRPM']
-        self.DriverCarName = self.db.DriverInfo['Drivers'][self.db.DriverInfo['DriverCarIdx']]['CarScreenNameShort']
+        self.DriverCarName = self.db.DriverInfo['Drivers'][self.db.DriverCarIdx]['CarScreenNameShort']
 
-        # self.db.DriverInfo['Drivers'][self.db.DriverInfo['DriverCarIdx']]['CarScreenNameShort']
         print(self.db.timeStr + ':First Shift RPM for', self.DriverCarName, ':', self.FirstRPM)
         print(self.db.timeStr + ':Shift RPM for', self.DriverCarName, ':', self.ShiftRPM)
         print(self.db.timeStr + ':Last Shift RPM for', self.DriverCarName, ':', self.LastRPM)
@@ -67,10 +113,8 @@ class UpShiftTone(threading.Thread):
         self.db.iRShiftRPM = [self.FirstRPM, self.ShiftRPM, self.LastRPM, self.BlinkRPM]
 
         # play three beep sounds as notification
-        # winsound.PlaySound(self.fname, winsound.SND_FILENAME)
         winsound.Beep(500, 150)
         time.sleep(0.3)
-        # winsound.PlaySound(self.fname, winsound.SND_FILENAME)
         winsound.Beep(600, 150)
         time.sleep(0.3)
         winsound.Beep(800, 150)
