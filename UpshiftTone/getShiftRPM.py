@@ -1,45 +1,20 @@
-import numpy as np
-import scipy.signal
-import scipy.optimize
-import matplotlib.pyplot as plt
-from functionalities.libs import importIBT
-from libs.Car import Car
+import os
+import time
 import tkinter as tk
 from tkinter import filedialog
-import time
-import os
 
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.optimize
+import scipy.signal
 
-def moving_average(a, n):
-    temp = a[-n:]
-    temp = np.append(temp, a)
-    temp = np.append(temp, a[0:n])
-    r = np.zeros(np.size(temp))
-    for i in range(0, len(temp)):
-        if i < n:
-            r[i] = np.mean(temp[0:i + n])
-        elif len(temp) < i + n:
-            r[i] = np.mean(temp[i - n:])
-        else:
-            r[i] = np.mean(temp[i - n:n + i])
-    return r[n:-n]
-
-
-def poly2(x, a, b, c):
-    return a + b * x + c * np.power(x, 2)
-
-
-def poly3(x, a, b, c, d):
-    return a + b * x + c * np.power(x, 2) + d * np.power(x, 3)
-
-
-def findIntersection(fun1, fun2, x0):
-    return scipy.optimize.fsolve(lambda x: fun1(x) - fun2(x), x0)
+from functionalities.libs import filters, maths, importIBT
+from libs.Car import Car
 
 
 def getShiftRPM(dirPath):
 
-    tReaction = 0.25
+    tReaction = 0.25  # TODO: as input to tune from GUI
 
     root = tk.Tk()
     root.withdraw()
@@ -56,8 +31,8 @@ def getShiftRPM(dirPath):
     d = importIBT.importIBT(path)
 
     # create results directory
-    resultsDirPath = dirPath + "/shiftTone/" + car.name
-    os.mkdir(resultsDirPath)
+    resultsDirPath = dirPath + "/shiftTone/" + car.name  # TODO: find better naming, e.g. based on car, track and data or comment
+    os.mkdir(resultsDirPath) # TODO: doesn't work if directory already exists
 
     d['BStraightLine'] = np.logical_and((d['gLat']) < 1, np.abs(d['SteeringWheelAngle']) < 0.03, np.abs(d['vCar']) > 10)
     d['BWOT'] = np.logical_and((d['rThrottle']) > 0.99, np.abs(d['rBrake']) < 0.01)
@@ -69,7 +44,7 @@ def getShiftRPM(dirPath):
     minRPM = 2000
 
     plt.ioff()
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(8, 5))  # TODO: make plot nice
     plt.grid()
     plt.scatter(d['vCar'][d['BShiftRPM']], d['gLong'][d['BShiftRPM']])
     plt.xlabel('vCar [m/s]')
@@ -95,14 +70,14 @@ def getShiftRPM(dirPath):
 
         tempBRPMRange = np.logical_and(d['BGear'][i], d['RPM'] > minRPM)
         tempBRPMRange = np.logical_and(tempBRPMRange, d['RPM'] < maxRPM[i])
-        tempBRPMRange = np.logical_and(tempBRPMRange, moving_average(d['EngineWarnings'], 6) < 1)
+        tempBRPMRange = np.logical_and(tempBRPMRange, filters.movingAverage(d['EngineWarnings'], 6) < 1)
 
         d['BRPMRange'].append(tempBRPMRange)
 
-        PolyFitTemp, temp = scipy.optimize.curve_fit(poly3, d['vCar'][d['BRPMRange'][i]], d['gLong'][d['BRPMRange'][i]])
+        PolyFitTemp, temp = scipy.optimize.curve_fit(maths.poly3, d['vCar'][d['BRPMRange'][i]], d['gLong'][d['BRPMRange'][i]])
         gLongPolyFit.append(PolyFitTemp)
 
-        PolyFitTemp, temp = scipy.optimize.curve_fit(poly2, d['vCar'][d['BRPMRange'][i]], d['RPM'][d['BRPMRange'][i]])
+        PolyFitTemp, temp = scipy.optimize.curve_fit(maths.poly2, d['vCar'][d['BRPMRange'][i]], d['RPM'][d['BRPMRange'][i]])
         RPMPolyFit.append(PolyFitTemp)
 
         vCarMin.append(np.min(d['vCar'][d['BRPMRange'][i]]))
@@ -110,26 +85,26 @@ def getShiftRPM(dirPath):
         vCar = np.linspace(vCarMin[i] - 10, vCarMax[i] + 10, 100)
 
         plt.scatter(d['vCar'][d['BRPMRange'][i]], d['gLong'][d['BRPMRange'][i]])
-        plt.plot(vCar, poly3(vCar, gLongPolyFit[i][0], gLongPolyFit[i][1], gLongPolyFit[i][2], gLongPolyFit[i][3]))
+        plt.plot(vCar, maths.poly3(vCar, gLongPolyFit[i][0], gLongPolyFit[i][1], gLongPolyFit[i][2], gLongPolyFit[i][3]))
 
     vCarShiftOptimal = []
     vCarShiftTarget = []
 
     for k in range(0, np.max(d['Gear']) - 1):
-        f1 = lambda x: poly3(x, gLongPolyFit[k][0], gLongPolyFit[k][1], gLongPolyFit[k][2], gLongPolyFit[k][3])
-        f2 = lambda x: poly3(x, gLongPolyFit[k + 1][0], gLongPolyFit[k + 1][1], gLongPolyFit[k + 1][2], gLongPolyFit[k + 1][3])
+        f1 = lambda x: maths.poly3(x, gLongPolyFit[k][0], gLongPolyFit[k][1], gLongPolyFit[k][2], gLongPolyFit[k][3])
+        f2 = lambda x: maths.poly3(x, gLongPolyFit[k + 1][0], gLongPolyFit[k + 1][1], gLongPolyFit[k + 1][2], gLongPolyFit[k + 1][3])
 
-        result = findIntersection(f1, f2, vCarMax[k])
+        result = maths.findIntersection(f1, f2, vCarMax[k])
 
         vCarShiftOptimal.append(np.min([result[0], vCarMax[k]]))
-        vCarShiftTarget.append(vCarShiftOptimal[k] - tReaction * poly3(vCarShiftOptimal[k], gLongPolyFit[k][0], gLongPolyFit[k][1], gLongPolyFit[k][2], gLongPolyFit[k][3]))
+        vCarShiftTarget.append(vCarShiftOptimal[k] - tReaction * maths.poly3(vCarShiftOptimal[k], gLongPolyFit[k][0], gLongPolyFit[k][1], gLongPolyFit[k][2], gLongPolyFit[k][3]))
 
         plt.scatter(vCarShiftOptimal[k], f1(vCarShiftOptimal[k]), marker='o', color='black')
         plt.scatter(vCarShiftTarget[k], f1(vCarShiftTarget[k]), marker='o', color='red')
 
     plt.savefig(resultsDirPath + '/gLong_vs_speed.png', dpi=300, orientation='landscape', progressive=True)
 
-    plt.figure()
+    plt.figure()  # TODO: make plot nice
     plt.scatter(d['vCar'][d['BShiftRPM']], d['RPM'][d['BShiftRPM']])
     plt.grid()
     plt.xlabel('vCar [m/s]')
@@ -142,11 +117,11 @@ def getShiftRPM(dirPath):
 
     for i in range(0, np.max(d['Gear'])):
         vCar = np.linspace(vCarMin[i] - 10, vCarMax[i] + 10, 100)
-        plt.plot(vCar, poly2(vCar, RPMPolyFit[i][0], RPMPolyFit[i][1], RPMPolyFit[i][2]))
+        plt.plot(vCar, maths.poly2(vCar, RPMPolyFit[i][0], RPMPolyFit[i][1], RPMPolyFit[i][2]))
 
         if i < np.max(d['Gear']) - 1:
-            nMotorShiftOptimal.append(poly2(vCarShiftOptimal[i], RPMPolyFit[i][0], RPMPolyFit[i][1], RPMPolyFit[i][2]))
-            nMotorShiftTarget.append(poly2(vCarShiftTarget[i], RPMPolyFit[i][0], RPMPolyFit[i][1], RPMPolyFit[i][2]))
+            nMotorShiftOptimal.append(maths.poly2(vCarShiftOptimal[i], RPMPolyFit[i][0], RPMPolyFit[i][1], RPMPolyFit[i][2]))
+            nMotorShiftTarget.append(maths.poly2(vCarShiftTarget[i], RPMPolyFit[i][0], RPMPolyFit[i][1], RPMPolyFit[i][2]))
             plt.scatter(vCarShiftOptimal[i], nMotorShiftOptimal[i], marker='o', color='black')
             plt.scatter(vCarShiftTarget[i], nMotorShiftTarget[i], marker='o', color='red')
 
