@@ -49,10 +49,12 @@ class RTDB:
         self.StartDDU = True
 
     def snapshot(self):
-        if not os.path.exists("snapshots/"):
-            os.mkdir("snapshots/")
+        snapshotDir = "data/snapshots/"
 
-        nameStr = time.strftime('snapshots/' + "%Y_%m_%d-%H-%M-%S", time.localtime())+'_RTDBsnapshot'
+        if not os.path.exists(snapshotDir):
+            os.mkdir(snapshotDir)
+
+        nameStr = time.strftime(snapshotDir + "%Y_%m_%d-%H-%M-%S", time.localtime())+'_RTDBsnapshot'
 
         variables = list(self.__dict__.keys())
         variables.remove('car')
@@ -74,7 +76,7 @@ class RTDB:
         print(time.strftime("%H:%M:%S", time.localtime()) + ': Saved snapshot: ' + nameStr+'.json')
 
     def loadSnapshot(self, name):
-        path = self.dir + '\\snapshots\\' + name
+        path = self.dir + '/data/snapshots/' + name
 
         self.StopDDU = True
         self.StartDDU = True
