@@ -1,22 +1,10 @@
 import threading
 import time
 import irsdk
-import json
 from libs import Car, Track
 import os
-import numpy as np
+from functionalities.libs import importExport
 
-
-class NumpyArrayEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        else:
-            return super(NumpyArrayEncoder, self).default(obj)
 
 class RTDB:
     def __init__(self):
@@ -60,8 +48,8 @@ class RTDB:
         variables.remove('car')
         variables.remove('track')
 
-        self.car.saveJson(self.dir, nameStr+'_car')
-        self.track.saveJson(self.dir, nameStr+'_track')
+        self.car.save(self.dir, nameStr+'_car')
+        self.track.save(self.dir, nameStr+'_track')
 
         self.WeekendInfo['WeekendOptions']['Date'] = str(self.WeekendInfo['WeekendOptions']['Date'])
 
@@ -70,8 +58,7 @@ class RTDB:
         for i in range(0, len(variables)):
             data[variables[i]] = self.__getattribute__(variables[i])
 
-        with open(nameStr+'.json', 'w') as outfile:
-            json.dump(data, outfile, indent=4, cls=NumpyArrayEncoder)
+        importExport.saveJson(data, nameStr+'.json')
 
         print(time.strftime("%H:%M:%S", time.localtime()) + ': Saved snapshot: ' + nameStr+'.json')
 
@@ -81,25 +68,23 @@ class RTDB:
         self.StopDDU = True
         self.StartDDU = True
 
-        with open(path + '.json') as f:
-            data = json.loads(f.read())
+        data = importExport.loadJson(path)
 
         carPath = path + '_car.json'
         self.car = Car.Car('default')
-        self.car.loadJson(carPath)
+        self.car.load(carPath)
 
         trackPath = path + '_track.json'
         self.track = Track.Track('default')
-        self.track.loadJson(trackPath)
+        self.track.load(trackPath)
         self.map = self.track.map
 
         self.initialise(data, False)
 
         print(time.strftime("%H:%M:%S", time.localtime()) + ': Loaded RTDB snapshot: ' + name +'.json')
 
-    def loadFuelTgt(self, path):
-        with open(path) as jsonFile:
-            data = json.loads(jsonFile.read())
+    def loadFuelTgt(self, path):  # TODO: does this need to live in here?
+        data = importExport.loadJson(path)
 
         temp = list(data.items())
         for i in range(0, len(data)):
