@@ -15,31 +15,29 @@ class NumpyArrayEncoder(json.JSONEncoder):
             return super(NumpyArrayEncoder, self).default(obj)
 
 
-# def saveCSV(data, path):
-#
-#
-# def loadCSV(path, *args):
-#
-#     if len(args) > 0:
-#         header =
-#
-#     self.db.__setattr__('map', [])
-#     self.db.__setattr__('x', [])
-#     self.db.__setattr__('y', [])
-#     self.db.__setattr__('dist', [])
-#     self.db.__setattr__('time', [])
-#
-#     with open(path) as csv_file:
-#
-#         csv_reader = csv.reader(csv_file)
-#
-#         for line in csv_reader:
-#             self.db.dist.append(float(line[0]))
-#             self.db.x.append(float(line[1]))
-#             self.db.y.append(float(line[2]))
-#             self.db.time.append(float(line[3]))
-#
-#             self.db.map.append([float(line[1]), float(line[2])
+def loadCSV(path):
+
+    with open(path) as csv_file:
+
+        csv_reader = csv.reader(csv_file)
+
+        NLine = 0
+        f = {}
+        header = []
+
+        for line in csv_reader:
+            if NLine == 0:
+                header = line[0].split(';')
+                for i in range(0, len(header)):
+                    f[header[i]] = []
+            else:
+                temp = line[0].split(';')
+                for i in range(0, len(header)):
+                    f[header[i]].append(temp[i])
+
+            NLine =+ 1
+
+        return f
 
 
 def loadJson(path: str):

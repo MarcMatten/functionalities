@@ -1,77 +1,97 @@
 import irsdk
 import numpy as np
-import matplotlib.pyplot as plt
-import scipy. signal
+import scipy.signal
+from functionalities.libs import importExport
 
-# S = importIBT(MyIbtPath, MyChannelMap, 'f')
-# MyIbtPath = 'C:/Users/Marc/Documents/iRacing/Telemetry/fordgt2017_monza full 2020-05-14 20-55-54.ibt'
-#
-channelMap = {'Speed': ['vCar', 1],  # m/s
-                'LapCurrentLapTime': ['tLap', 1],  # s
-                'LatAccel': ['gLat', 1],  # m/s²
-                'LongAccel': ['gLong', 1],  # m/s²
-                'ThrottleRaw': ['rThrottle', 1],  # 1
-                'BrakeRaw': ['rBrake', 1],  # 1
-                'FuelUsePerHour': ['QFuel', 1 / 3.6],  # l/h --> g/s
-                'LapDist': ['sLap', 1],  # m
-                'Alt': ['GPSAltitude', 1]  # m,
-                }
+# TODO: better logging
 
-def importIBT(ibtPath, *args):
+def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMap.csv'):
 
+    # read in telemetry channels
     ir_ibt = irsdk.IBT()
     ir_ibt.open(ibtPath)
+    var_headers_names = ir_ibt.var_headers_names
+
     temp = dict()
     s = dict()
 
-    if len(args) > 1:
-        print('Error: maximum 3 arguments can be supplied: file path, channel map and export criteria (lap number of f for fastest lap)!')
-        return
+    # load channel map
+    channelMap = importExport.loadCSV(channelMapPath)
 
-    # import all
-    for i in range(0, len(ir_ibt.var_headers_names)):
-        if ir_ibt.var_headers_names[i] in channelMap:
-            temp[channelMap[ir_ibt.var_headers_names[i]][0]] = np.array(ir_ibt.get_all(ir_ibt.var_headers_names[i])) * channelMap[ir_ibt.var_headers_names[i]][1]
+    # define telemetry channels to import
+    channelsExport= []
+
+    if channels is None:
+        channelsExport = var_headers_names
+    else:
+        for i in range(0, len(channels)):
+            if channels[i] in var_headers_names:
+                channelsExport.append(channels[i])
+            elif channels[i] in channelMap['ChannelName']:
+                index = channelMap['ChannelName'].index(channels[i])
+                channelsExport.append(channelMap['iRacingChannelName'][index])
+            else:
+                print('Error: <{}> neihter in list of iRacing channels nor in channel map! - Skipping this channel!'.format(channels[i]))
+
+    channelsExport.extend(['LapCurrentLapTime', 'LapDist', 'Speed', 'Lap'])
+    channelsExport = list(set(channelsExport))
+
+    # import channels
+    for i in range(0, len(channelsExport)):
+        if channelsExport[i] in var_headers_names:
+            temp[channelsExport[i]] = np.array(ir_ibt.get_all(channelsExport[i]))
         else:
-            temp[ir_ibt.var_headers_names[i]] = np.array(ir_ibt.get_all(ir_ibt.var_headers_names[i]))
+            print('Error: <{}> not in the list of available channels'.format(channelsExport[i]))
 
     varNames = list(temp.keys())
 
-    # cut file as requested
-    if len(args) == 1:
-        if args[0] == 'f' or args[0] == 'F' or args[0] == 'fastest' or args[0] == 'Fastest':
-            NLapTimesIndex = scipy.signal.find_peaks(np.array(temp['tLap']), prominence=10)
-            NLapTimeFastestIndex = np.argmin(np.array(temp['tLap'])[NLapTimesIndex[0]])
+    # cut data
+    if lap is None or lap in ['a', 'A', 'all', 'ALL', 'All', 'w', 'W', 'whole', 'WHOLE']:  # complete file
+        for i in range(0, len(varNames)):
+            s[varNames[i]] = temp[varNames[i]]
+    else:
+        indices = []
+        if lap in ['f', 'F', 'fastest', 'Fastest', 'FASTERST']:  # fastest lap only
+            # find the fastest lap
+            NLapTimesIndex = scipy.signal.find_peaks(np.array(temp['LapCurrentLapTime']), prominence=10)  # TODO: does this always work?
+            NLapTimeFastestIndex = np.argmin(np.array(temp['LapCurrentLapTime'])[NLapTimesIndex[0]])
             NLapFastest = temp['Lap'][NLapTimesIndex[0][NLapTimeFastestIndex]]
 
+            # get all indices for the fastest lap
             indices = np.argwhere(temp['Lap'] == NLapFastest)[:, 0]
 
-            for i in range(0, len(varNames)):
-                if varNames[i] in channelMap:
-                    s[channelMap[varNames[i]][0]] = temp[varNames[i]][indices]
-                else:
-                    s[varNames[i]] = temp[varNames[i]][indices]
-
-        elif np.isint(args[0]):
-            if args[0] < np.min(temp['Lap']) or args[0] > np.max(np.array(temp['Lap'])):
-                print('Error: Lap out of bounds! File contains laps ' + str(np.min(temp['Lap'])) + ' to ' + str(np.max(np.array(temp['Lap']))))
+        # lap number
+        elif isinstance(lap, int):
+            if lap < np.min(temp['Lap']) or lap > np.max(np.array(temp['Lap'])):
+                print('Error: Lap number {} is out of bounds! File contains laps {} to {}'.format(lap, np.min(temp['Lap']), np.max(np.array(temp['Lap']))))
                 return
 
-            indices = np.argwhere(temp['Lap'] == args[0])[:, 0]
+            indices = np.argwhere(temp['Lap'] == lap)[:, 0]
 
-            for i in range(0, len(varNames)):
-                if varNames[i] in channelMap:
-                    s[channelMap[varNames[i]][0]] = temp[varNames[i]][indices]
-                else:
-                    s[varNames[i]] = temp[varNames[i]][indices]
-
-    else:  # complete file
+        # actually cut the data
         for i in range(0, len(varNames)):
-            if varNames[i] in channelMap:
-                s[channelMap[varNames[i]][0]] = temp[varNames[i]]
-            else:
-                s[varNames[i]] = temp[varNames[i]]
+            s[varNames[i]] = temp[varNames[i]][indices]
 
     ir_ibt.close()
 
-    return s
+    # channel mapping
+    c = dict()
+
+    for i in range(0, len(channelsExport)):
+        if channelsExport[i] in channelMap['iRacingChannelName']:
+            index = channelMap['iRacingChannelName'].index(channelsExport[i])
+            c[channelMap['ChannelName'][index]] = np.array(s[channelsExport[i]]) * float(channelMap['ConverstionFactor'][index])
+        else:
+            c[channelsExport[i]] = s[channelsExport[i]]
+
+    # read in metadata
+    ir = irsdk.IRSDK()
+    ir.startup(test_file=ibtPath)
+
+    c['CarSetup'] = ir['CarSetup']
+    c['DriverInfo'] = ir['DriverInfo']
+    c['WeekendInfo'] = ir['WeekendInfo']
+
+    ir.shutdown()
+
+    return c
