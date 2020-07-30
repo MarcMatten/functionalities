@@ -94,4 +94,4 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
 
     ir.shutdown()
 
-    return c
+    return c, var_headers_names
