@@ -2,6 +2,7 @@ import pyvjoy
 import threading
 import pygame
 import os
+import time
 
 # TODO:
 # class and instances ? of switched for DDU controls and iRacing controls
@@ -17,15 +18,30 @@ import os
 #   gui and function to set multi functions buttons
 #   gui and function to populate iracing controls
 
-class MultiSwitch(threading.Thread):
+
+class MultiSwitchItem:
+    def __init__(self, RTDB):
+        self.db = RTDB
+
+
+class MultiSwitchThread(MultiSwitchItem, threading.Thread):
     def __init__(self, RTDB, rate):
+        MultiSwitchItem.__init__(self, RTDB)
         threading.Thread.__init__(self)
         self.rate = rate
-        self.db = RTDB
+
+
+class MultiSwitch(MultiSwitchThread):
+    def __init__(self, RTDB, rate):
+        MultiSwitchThread.__init__(self, RTDB, rate)
+        self.timeStr = ''
+        # self.rate = rate
+        # self.db = RTDB
         self.j = pyvjoy.VJoyDevice(1)
 
         myJoystick = None
         pygame.init()
+        SCREEN = pygame.display.set_mode((10, 10))
 
         # initialize joystick
         if os.environ['COMPUTERNAME'] == 'MARC-SURFACE':
@@ -36,23 +52,13 @@ class MultiSwitch(threading.Thread):
     def run(self):
         while 1:
             # observe input controller
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.done = True
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-                    self.db.StopDDU = True
-
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or event.type == pygame.JOYBUTTONDOWN and event.button == 25:
-                    if self.db.NDDUPage == 1:
-                        self.db.NDDUPage = 2
-                    else:
-                        self.db.NDDUPage = 1
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.KEYDOWN:
+                    print(pygame.key.name(event.key))
 
             # in case of relevant change inrease or decrese value and send
             # if iRacing Control forward command via vjoy
-
-
 
             # execute this loop while iRacing is running
             # print('running')
@@ -61,23 +67,25 @@ class MultiSwitch(threading.Thread):
             # self.j.set_button(1,0)
             # time.sleep(self.rate)
 
+            time.sleep(self.rate)
+
     def initJoystick(self, name):
         pygame.joystick.init()
-        print(self.db.timeStr + ': \t' + str(pygame.joystick.get_count()) + ' joysticks detected:')
+        print(self.timeStr + ': \t' + str(pygame.joystick.get_count()) + ' joysticks detected:')
 
         desiredJoystick = 9999
 
         for i in range(pygame.joystick.get_count()):
-            print(self.db.timeStr + ':\tJoystick ', i, ': ', pygame.joystick.Joystick(i).get_name())
+            print(self.timeStr + ':\tJoystick ', i, ': ', pygame.joystick.Joystick(i).get_name())
             if pygame.joystick.Joystick(i).get_name() == name:
                 desiredJoystick = i
 
         if not desiredJoystick == 9999:
-            print(self.db.timeStr + ':\tConnecting to', pygame.joystick.Joystick(desiredJoystick).get_name())
+            print(self.timeStr + ':\tConnecting to', pygame.joystick.Joystick(desiredJoystick).get_name())
             myJoystick = pygame.joystick.Joystick(desiredJoystick)
             myJoystick.get_name()
             myJoystick.init()
-            print(self.db.timeStr + ':\tSuccessfully connected to', pygame.joystick.Joystick(desiredJoystick).get_name(), '!')
+            print(self.timeStr + ':\tSuccessfully connected to', pygame.joystick.Joystick(desiredJoystick).get_name(), '!')
         else:
-            print(self.db.timeStr + ':\tFANATEC ClubSport Wheel Base not found!')
+            print(self.timeStr + ':\tFANATEC ClubSport Wheel Base not found!')
 
