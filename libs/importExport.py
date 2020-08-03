@@ -1,7 +1,7 @@
 import json
 import csv
 import numpy as np
-
+import os, glob
 
 class NumpyArrayEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -13,7 +13,6 @@ class NumpyArrayEncoder(json.JSONEncoder):
             return obj.tolist()
         else:
             return super(NumpyArrayEncoder, self).default(obj)
-
 
 def loadCSV(path):
 
@@ -39,13 +38,11 @@ def loadCSV(path):
 
         return f
 
-
 def loadJson(path: str):
     with open(path) as jsonFile:
         data = json.loads(jsonFile.read())
 
     return data
-
 
 def saveJson(data: dict, path: str):
 
@@ -58,3 +55,14 @@ def saveJson(data: dict, path: str):
 
     with open(path, 'w') as outfile:
         json.dump(dataOut, outfile, indent=4, sort_keys=True, cls=NumpyArrayEncoder)
+
+def getFiles(dirPath, fileType):
+    fileList = []
+    dirTemp = os.getcwd()
+
+    os.chdir(dirPath)
+    for file in glob.glob('*.' + fileType):
+        fileList.append(file)
+    os.chdir(dirTemp)
+
+    return fileList
