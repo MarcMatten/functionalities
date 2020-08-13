@@ -1,8 +1,9 @@
-import pyvjoy
+# import pyvjoy
 import threading
 import pygame
 import os
 import time
+import numpy as np
 
 # TODO:
 # class and instances ? of switched for DDU controls and iRacing controls
@@ -20,28 +21,40 @@ import time
 
 
 class MultiSwitchItem:
-    def __init__(self, RTDB):
-        self.db = RTDB
+    db = 0
+    NButtonIncMap = 19
+    NButtonDecMap = 20
+    NButtonIncValue = 21
+    NButtonDecValue = 22
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def setDB(rtdb):
+        MultiSwitchItem.db = rtdb
 
 
 class MultiSwitchThread(MultiSwitchItem, threading.Thread):
-    def __init__(self, RTDB, rate):
-        MultiSwitchItem.__init__(self, RTDB)
+    def __init__(self, rate):
+        MultiSwitchItem.__init__(self)
         threading.Thread.__init__(self)
         self.rate = rate
 
 
 class MultiSwitch(MultiSwitchThread):
-    def __init__(self, RTDB, rate):
-        MultiSwitchThread.__init__(self, RTDB, rate)
-        self.timeStr = ''
-        # self.rate = rate
-        # self.db = RTDB
-        self.j = pyvjoy.VJoyDevice(1)
+    maps = {}
 
-        myJoystick = None
+    def __init__(self, RTDB, rate):
+        MultiSwitchThread.__init__(self, rate)
+        MultiSwitchItem.setDB(RTDB)
+        self.timeStr = ''
+        # test0 = MultiSwitchItem()
+        # test = MultiSwitchMap('blah')
+
+        # myJoystick = None
         pygame.init()
-        SCREEN = pygame.display.set_mode((10, 10))
+        # SCREEN = pygame.display.set_mode((10, 10))
 
         # initialize joystick
         if os.environ['COMPUTERNAME'] == 'MARC-SURFACE':
@@ -50,12 +63,36 @@ class MultiSwitch(MultiSwitchThread):
             self.initJoystick('FANATEC ClubSport Wheel Base')
 
     def run(self):
+        temp = list(self.maps.keys())
         while 1:
             # observe input controller
             events = pygame.event.get()
             for event in events:
-                if event.type == pygame.KEYDOWN:
-                    print(pygame.key.name(event.key))
+                # if event.type == pygame.KEYDOWN:
+                #     print(pygame.key.name(event.key))
+                if event.type == pygame.JOYBUTTONDOWN:
+                    if event.button == self.NButtonIncMap:
+                        NCurrentMap = self.db.NCurrentMap + 1
+                        if NCurrentMap > len(temp)-1:
+                            NCurrentMap = NCurrentMap - len(temp)
+
+                        self.db.NCurrentMap = NCurrentMap
+
+                        print('Current map: {} . {}'.format(self.db.NCurrentMap, temp[self.db.NCurrentMap]))
+
+                    elif event.button == self.NButtonDecMap:
+                        NCurrentMap = self.db.NCurrentMap - 1
+                        if NCurrentMap < 0:
+                            NCurrentMap = len(temp) + NCurrentMap
+
+                        self.db.NCurrentMap = NCurrentMap
+
+                        print('Current map: {} . {}'.format(self.db.NCurrentMap, temp[self.db.NCurrentMap]))
+
+                    elif event.button == self.NButtonIncValue:
+                        self.maps[temp[self.db.NCurrentMap]].increase()
+                    elif event.button == self.NButtonDecValue:
+                        self.maps[temp[self.db.NCurrentMap]].decrease()
 
             # in case of relevant change inrease or decrese value and send
             # if iRacing Control forward command via vjoy
@@ -89,3 +126,52 @@ class MultiSwitch(MultiSwitchThread):
         else:
             print(self.timeStr + ':\tFANATEC ClubSport Wheel Base not found!')
 
+    def addMapping(self, name='name', minValue=0 , maxValue= 1, step=1):
+        if name in self.db.dc:
+            self.maps[name] = MultiSwitchMapiRControl(name, minValue , maxValue, step)
+        else:
+            self.maps[name] = MultiSwitchMapDDUControl(name, minValue , maxValue, step)
+
+class MultiSwitchMapDDUControl(MultiSwitchItem):
+    def __init__(self, name, minValue , maxValue, step):
+        MultiSwitchItem.__init__(self)
+        self.name = name
+        self.type = type(self.db.__getattribute__(name))
+        if self.type is not bool:
+            self.minValue = minValue
+            self.maxValue = maxValue
+            self.step = step
+
+    def increase(self):
+        if self.type is not bool:
+            newVal = np.min([self.db.__getattribute__(self.name) + self.step, self.maxValue])
+            self.db.__setattr__(self.name, newVal)
+        else:
+            self.db.__setattr__(self.name, not self.db.__getattribute__(self.name))
+
+        print('Increase ' + self.name)
+
+    def decrease(self):
+        if self.type is not bool:
+            newVal = np.max([self.db.__getattribute__(self.name) - self.step, self.minValue])
+            self.db.__setattr__(self.name, newVal)
+        else:
+            self.db.__setattr__(self.name, not self.db.__getattribute__(self.name))
+
+        print('Decrease ' + self.name)
+
+class MultiSwitchMapiRControl(MultiSwitchItem):
+    def __init__(self, name, minValue , maxValue, step):
+        MultiSwitchItem.__init__(self)
+        self.name = name
+        self.type = type(self.db.__getattribute__(name))
+        if self.type is not bool:
+            self.minValue = minValue
+            self.maxValue = maxValue
+            self.step = step
+
+    def increase(self):
+        print('Increase ' + self.name)
+
+    def decrease(self):
+        print('Decrease ' + self.name)

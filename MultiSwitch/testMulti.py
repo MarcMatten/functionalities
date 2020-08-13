@@ -1,5 +1,5 @@
-from MultiSwitch import MultiSwitch
-from RTDB import RTDB
+from functionalities.MultiSwitch import MultiSwitch
+from functionalities.RTDB import RTDB
 
 calcData = {'startUp': False,
             'LastFuelLevel': 0,
@@ -127,6 +127,8 @@ calcData = {'startUp': False,
             'dcThrottleShapeOld': 0,
             'dcTractionControlOld': 0,
             'dcTractionControl2Old': 0,
+            'dcTractionControl': 0,
+            'dcTractionControl2': 0,
             'dcTractionControlToggleOld': 0,
             'dcABSOld': 0,
             'dcBrakeBiasOld': 0,
@@ -172,7 +174,7 @@ calcData = {'startUp': False,
             'car': None,
             'SubSessionIDOld': 0,
             'NDDUPage': 1,
-            'dc': {},
+            'dc': {'dcABS'},
             'dcOld': {},
             'dcChangedItems': {},
             'BLoggerActive': False,
@@ -235,12 +237,58 @@ calcData = {'startUp': False,
             'fFuelBeep': 300,
             'tFuelBeep': 150,
             'fShiftBeep': 500,
-            'tShiftBeep': 150
+            'tShiftBeep': 150,
+            'dcABS': 6,
+            'NButtonPressed': None,
+            'NCurrentMap': 0
             }
 
 myRTDB = RTDB.RTDB()
 myRTDB.initialise(calcData, False)
 
-ms = MultiSwitch(myRTDB, 0.01)
+ms = MultiSwitch.MultiSwitch(myRTDB, 0.01)
+
+ms.addMapping('BEnableLiftTones')
+ms.addMapping('BBeginFueling')
+ms.addMapping('LapsToGo', minValue=0, maxValue=100, step=5)
+ms.addMapping('dcABS', minValue=0, maxValue=12, step=1)
+ms.addMapping('dcTractionControl', minValue=0, maxValue=12, step=1)
+ms.addMapping('dcTractionControl2', minValue=0, maxValue=12, step=1)
+
+# print(ms.db.__getattribute__('LapsToGo'))
+#
+# ms.maps['LapsToGo'].decrease()
+#
+# print(ms.db.__getattribute__('LapsToGo'))
+#
+#
+# ms.maps['dcABS'].decrease()
+#
+# ms.maps['dcABS'].increase()
 
 ms.run()
+
+
+
+# m1 = MultiSwitch.MultiSwitchItem()
+#
+# m2 = MultiSwitch.MultiSwitchItem()
+#
+# m3 = MultiSwitch.MultiSwitchItem()
+#
+#
+# print(m1.db)
+# print(m2.db)
+# print(m3.db)
+#
+#
+# m3.db = 123
+#
+# MultiSwitch.MultiSwitchItem.db = 4
+# m4 = MultiSwitch.MultiSwitchItem()
+#
+#
+# print(m1.db)
+# print(m2.db)
+# print(m3.db)
+# print(m4.db)
