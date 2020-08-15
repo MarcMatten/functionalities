@@ -132,6 +132,7 @@ calcData = {'startUp': False,
             'dcTractionControlToggleOld': 0,
             'dcABSOld': 0,
             'dcBrakeBiasOld': 0,
+            'dcBrakeBias': 0,
             'RunStartTime': 0,
             'changeLabelsOn': True,
             'dcChangeTime': 0,
@@ -174,7 +175,11 @@ calcData = {'startUp': False,
             'car': None,
             'SubSessionIDOld': 0,
             'NDDUPage': 1,
-            'dc': {'dcABS'},
+            'dc': {'dcABS',
+                   'dcTractionControl',
+                   'dcTractionControl2',
+                   'dcBrakeBias'
+                   },
             'dcOld': {},
             'dcChangedItems': {},
             'BLoggerActive': False,
@@ -254,6 +259,7 @@ ms.addMapping('LapsToGo', minValue=0, maxValue=100, step=5)
 ms.addMapping('dcABS', minValue=0, maxValue=12, step=1)
 ms.addMapping('dcTractionControl', minValue=0, maxValue=12, step=1)
 ms.addMapping('dcTractionControl2', minValue=0, maxValue=12, step=1)
+ms.addMapping('dcBrakeBias', minValue=0, maxValue=12, step=1)
 
 # print(ms.db.__getattribute__('LapsToGo'))
 #

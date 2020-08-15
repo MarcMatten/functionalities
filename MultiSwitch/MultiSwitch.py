@@ -4,6 +4,7 @@ import pygame
 import os
 import time
 import numpy as np
+import time
 
 # TODO:
 # class and instances ? of switched for DDU controls and iRacing controls
@@ -34,7 +35,6 @@ class MultiSwitchItem:
     def setDB(rtdb):
         MultiSwitchItem.db = rtdb
 
-
 class MultiSwitchThread(MultiSwitchItem, threading.Thread):
     def __init__(self, rate):
         MultiSwitchItem.__init__(self)
@@ -43,7 +43,12 @@ class MultiSwitchThread(MultiSwitchItem, threading.Thread):
 
 
 class MultiSwitch(MultiSwitchThread):
-    maps = {}
+    mapDDU = {}
+    mapIR = {}
+    NCurrentMapDDU = 0
+    NCurrentMapIR = 0
+    NMultiState = 0
+    tMultiChange = 0
 
     def __init__(self, RTDB, rate):
         MultiSwitchThread.__init__(self, rate)
@@ -63,7 +68,8 @@ class MultiSwitch(MultiSwitchThread):
             self.initJoystick('FANATEC ClubSport Wheel Base')
 
     def run(self):
-        temp = list(self.maps.keys())
+        mapDDUList = list(self.mapDDU.keys())
+        mapIRList = list(self.mapIR.keys())
         while 1:
             # observe input controller
             events = pygame.event.get()
@@ -72,27 +78,77 @@ class MultiSwitch(MultiSwitchThread):
                 #     print(pygame.key.name(event.key))
                 if event.type == pygame.JOYBUTTONDOWN:
                     if event.button == self.NButtonIncMap:
-                        NCurrentMap = self.db.NCurrentMap + 1
-                        if NCurrentMap > len(temp)-1:
-                            NCurrentMap = NCurrentMap - len(temp)
+                        if self.NMultiState == 0:
+                            self.NMultiState = 1
+                        else:
+                            if self.NMultiState == 1:
+                                NCurrentMapIR = self.NCurrentMapIR + 1
+                                if NCurrentMapIR > len(mapIRList)-1:
+                                    NCurrentMapIR = NCurrentMapIR - len(mapIRList)
 
-                        self.db.NCurrentMap = NCurrentMap
+                                self.NCurrentMapIR = NCurrentMapIR
+                            elif self.NMultiState == 2:
+                                NCurrentMapDDU = self.NCurrentMapDDU + 1
+                                if NCurrentMapDDU > len(mapDDUList)-1:
+                                    NCurrentMapDDU = NCurrentMapDDU - len(mapDDUList)
 
-                        print('Current map: {} . {}'.format(self.db.NCurrentMap, temp[self.db.NCurrentMap]))
+                                self.NCurrentMapDDU = NCurrentMapDDU
+
+                        self.tMultiChange = time.time()
+
+                        # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
 
                     elif event.button == self.NButtonDecMap:
-                        NCurrentMap = self.db.NCurrentMap - 1
-                        if NCurrentMap < 0:
-                            NCurrentMap = len(temp) + NCurrentMap
+                        if self.NMultiState == 0:
+                            self.NMultiState = 2
+                        else:
+                            if self.NMultiState == 1:
+                                NCurrentMapIR = self.NCurrentMapIR - 1
+                                if NCurrentMapIR < 0:
+                                    NCurrentMapIR = len(mapIRList) + NCurrentMapIR
 
-                        self.db.NCurrentMap = NCurrentMap
+                                self.NCurrentMapIR = NCurrentMapIR
 
-                        print('Current map: {} . {}'.format(self.db.NCurrentMap, temp[self.db.NCurrentMap]))
+                            elif self.NMultiState == 2:
+                                NCurrentMapDDU = self.NCurrentMapDDU - 1
+                                if NCurrentMapDDU < 0:
+                                    NCurrentMapDDU = len(mapDDUList) + NCurrentMapDDU
+
+                                self.NCurrentMapDDU = NCurrentMapDDU
+
+                            # print('Current map: {} -  {}'.format(self.NCurrentMap, temp[self.NCurrentMap]))
+
+                        self.tMultiChange = time.time()
+
+                        # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
 
                     elif event.button == self.NButtonIncValue:
-                        self.maps[temp[self.db.NCurrentMap]].increase()
+                        if self.NMultiState == 0:
+                            self.mapIR['dcBrakeBias'].increase()
+                        else:
+                            if self.NMultiState == 1:
+                                self.mapIR[mapIRList[self.NCurrentMapIR]].increase()
+                            elif self.NMultiState == 2:
+                                self.mapDDU[mapDDUList[self.NCurrentMapDDU]].increase()
+
+                        self.tMultiChange = time.time()
+
+                        # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
+
                     elif event.button == self.NButtonDecValue:
-                        self.maps[temp[self.db.NCurrentMap]].decrease()
+                        if self.NMultiState == 0:
+                            self.mapIR['dcBrakeBias'].decrease()
+                        else:
+                            if self.NMultiState == 1:
+                                self.mapIR[mapIRList[self.NCurrentMapIR]].decrease()
+                            elif self.NMultiState == 2:
+                                self.mapDDU[mapDDUList[self.NCurrentMapDDU]].decrease()
+
+                        self.tMultiChange = time.time()
+
+                        # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
+
+
 
             # in case of relevant change inrease or decrese value and send
             # if iRacing Control forward command via vjoy
@@ -103,6 +159,12 @@ class MultiSwitch(MultiSwitchThread):
             # time.sleep(self.rate)
             # self.j.set_button(1,0)
             # time.sleep(self.rate)
+
+            if time.time() > (self.tMultiChange + 5):
+                if not self.NMultiState == 0:
+                    self.NMultiState = 0
+                    # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
+
 
             time.sleep(self.rate)
 
@@ -128,9 +190,9 @@ class MultiSwitch(MultiSwitchThread):
 
     def addMapping(self, name='name', minValue=0 , maxValue= 1, step=1):
         if name in self.db.dc:
-            self.maps[name] = MultiSwitchMapiRControl(name, minValue , maxValue, step)
+            self.mapIR[name] = MultiSwitchMapiRControl(name, minValue , maxValue, step)
         else:
-            self.maps[name] = MultiSwitchMapDDUControl(name, minValue , maxValue, step)
+            self.mapDDU[name] = MultiSwitchMapDDUControl(name, minValue , maxValue, step)
 
 class MultiSwitchMapDDUControl(MultiSwitchItem):
     def __init__(self, name, minValue , maxValue, step):
