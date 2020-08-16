@@ -1,5 +1,6 @@
 from functionalities.MultiSwitch import MultiSwitch
 from functionalities.RTDB import RTDB
+from libs import Car
 
 calcData = {'startUp': False,
             'LastFuelLevel': 0,
@@ -62,7 +63,7 @@ calcData = {'startUp': False,
             'UserShiftRPM': [100000, 100000, 100000, 100000, 100000, 100000, 100000],
             'UserShiftFlag': [1, 1, 1, 1, 1, 1, 1],
             'iRShiftRPM': [100000, 100000, 100000, 100000],
-            'ShiftToneEnabled': True,
+            # 'ShiftToneEnabled': True,
             'StartDDU': False,
             'StopDDU': False,
             'DDUrunning': False,
@@ -170,7 +171,7 @@ calcData = {'startUp': False,
             'tdcHeadlightFlash': 0,
             'dcHeadlightFlashOld': False,
             'newLapTime': 0,
-            'BEnableRaceLapEstimation': False,
+            # 'BEnableRaceLapEstimation': False,
             'track': None,
             'car': None,
             'SubSessionIDOld': 0,
@@ -198,7 +199,7 @@ calcData = {'startUp': False,
             'BPitCommandUpdate': False,
             'PlayerTrackSurfaceOld': 0,
             'BEnteringPits': False,
-            'BPitCommandControl': False,
+            # 'BPitCommandControl': False,
             'sToPitStall': 0,
             'sToPitStallStr': '463',
             'PitSvFlagsEntry': 0,
@@ -227,12 +228,12 @@ calcData = {'startUp': False,
             'Exception': None,
             'BLiftToneRequest': False,
             'FuelTGTLiftPoints': {},
-            'VFuelTgt': 3.05,
+            # 'VFuelTgt': 3.05,
             'VFuelTgtEffective': 3.05,
-            'VFuelTgtOffset': 0,
+            # 'VFuelTgtOffset': 0,
             'BLiftBeepPlayed': [],
             'NNextLiftPoint': 0,
-            'BEnableLiftTones': False,
+            # 'BEnableLiftTones': False,
             'tNextLiftPoint': 0,
             'DDUControlList':
                 {
@@ -245,56 +246,50 @@ calcData = {'startUp': False,
             'tShiftBeep': 150,
             'dcABS': 6,
             'NButtonPressed': None,
-            'NCurrentMap': 0
+            'NCurrentMap': 0,
+            'dcHeadlightFlash': False,
+            'dcPitSpeedLimiterToggle': False,
+            'dcStarter': False,
+            'dcTractionControlToggle': False
             }
+
+iDDUControls = {
+    'ShiftToneEnabled': True,
+    'BEnableRaceLapEstimation': True,
+    'BPitCommandControl': True,
+    'VFuelTgt': (0, 0, 50, 0.01),
+    'VFuelTgtOffset': (0, -5, 5, 0.01),
+    'BEnableLiftTones': True
+}
+
+iDDUControlsNameInit = {}
+
+iDDUControlsName = list(iDDUControls.keys())
+for i in range(0, len(iDDUControlsName)):
+    if type(iDDUControls[iDDUControlsName[i]]) is bool:
+        iDDUControlsNameInit[iDDUControlsName[i]] = iDDUControls[iDDUControlsName[i]]
+    else:
+        iDDUControlsNameInit[iDDUControlsName[i]] = iDDUControls[iDDUControlsName[i]][0]
 
 myRTDB = RTDB.RTDB()
 myRTDB.initialise(calcData, False)
+myRTDB.initialise(iDDUControlsNameInit, False)
+
+myRTDB.car = Car.Car('name')
+myRTDB.car.load('C:/Users/Marc/Documents/Projekte/iDDU/data/car/Porsche 718 Cayman GT4.json')
+
+dcList = list(myRTDB.car.dcList.keys())
+myRTDB.queryData.extend(dcList)
+
 
 ms = MultiSwitch.MultiSwitch(myRTDB, 0.01)
 
-ms.addMapping('BEnableLiftTones')
-ms.addMapping('BBeginFueling')
-ms.addMapping('LapsToGo', minValue=0, maxValue=100, step=5)
-ms.addMapping('dcABS', minValue=0, maxValue=12, step=1)
-ms.addMapping('dcTractionControl', minValue=0, maxValue=12, step=1)
-ms.addMapping('dcTractionControl2', minValue=0, maxValue=12, step=1)
-ms.addMapping('dcBrakeBias', minValue=0, maxValue=12, step=1)
+for i in range(0, len(iDDUControlsName)):
+    if type(iDDUControls[iDDUControlsName[i]]) is bool:
+        ms.addMapping(iDDUControlsName[i])
+    else:
+        ms.addMapping(iDDUControlsName[i], minValue=iDDUControls[iDDUControlsName[i]][1], maxValue=iDDUControls[iDDUControlsName[i]][2], step=iDDUControls[iDDUControlsName[i]][3])
 
-# print(ms.db.__getattribute__('LapsToGo'))
-#
-# ms.maps['LapsToGo'].decrease()
-#
-# print(ms.db.__getattribute__('LapsToGo'))
-#
-#
-# ms.maps['dcABS'].decrease()
-#
-# ms.maps['dcABS'].increase()
+ms.initCar()
 
 ms.run()
-
-
-
-# m1 = MultiSwitch.MultiSwitchItem()
-#
-# m2 = MultiSwitch.MultiSwitchItem()
-#
-# m3 = MultiSwitch.MultiSwitchItem()
-#
-#
-# print(m1.db)
-# print(m2.db)
-# print(m3.db)
-#
-#
-# m3.db = 123
-#
-# MultiSwitch.MultiSwitchItem.db = 4
-# m4 = MultiSwitch.MultiSwitchItem()
-#
-#
-# print(m1.db)
-# print(m2.db)
-# print(m3.db)
-# print(m4.db)

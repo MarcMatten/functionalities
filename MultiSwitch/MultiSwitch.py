@@ -2,7 +2,6 @@
 import threading
 import pygame
 import os
-import time
 import numpy as np
 import time
 
@@ -189,10 +188,16 @@ class MultiSwitch(MultiSwitchThread):
             print(self.timeStr + ':\tFANATEC ClubSport Wheel Base not found!')
 
     def addMapping(self, name='name', minValue=0 , maxValue= 1, step=1):
-        if name in self.db.dc:
+        if name in self.db.car.dcList:
             self.mapIR[name] = MultiSwitchMapiRControl(name, minValue , maxValue, step)
         else:
             self.mapDDU[name] = MultiSwitchMapDDUControl(name, minValue , maxValue, step)
+
+    def initCar(self):
+        dcList = list(self.db.car.dcList.keys())
+        for i in range(0, len(dcList)):
+            if self.db.car.dcList[dcList[i]][1]:
+                self.addMapping(dcList[i])
 
 class MultiSwitchMapDDUControl(MultiSwitchItem):
     def __init__(self, name, minValue , maxValue, step):
