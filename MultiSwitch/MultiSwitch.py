@@ -4,6 +4,7 @@ import pygame
 import os
 import numpy as np
 import time
+from functionalities.libs import importExport
 
 # TODO:
 # class and instances ? of switched for DDU controls and iRacing controls
@@ -27,12 +28,15 @@ class MultiSwitchItem:
     NButtonIncValue = 21
     NButtonDecValue = 22
 
+    dcIgnoreList = ['dcHeadlightFlash', 'dcPitSpeedLimiterToggle', 'dcStarter', 'dcTractionControlToggle']
+
     def __init__(self):
         pass
 
     @staticmethod
     def setDB(rtdb):
         MultiSwitchItem.db = rtdb
+        MultiSwitchItem.dcConfig = importExport.loadJson(MultiSwitchItem.db.dir + '/multi.json')
 
 class MultiSwitchThread(MultiSwitchItem, threading.Thread):
     def __init__(self, rate):
@@ -194,10 +198,22 @@ class MultiSwitch(MultiSwitchThread):
             self.mapDDU[name] = MultiSwitchMapDDUControl(name, minValue , maxValue, step)
 
     def initCar(self):
+
+        self.dcConfig = importExport.loadJson(self.db.dir + '/multi.json')
+
         dcList = list(self.db.car.dcList.keys())
         for i in range(0, len(dcList)):
-            if self.db.car.dcList[dcList[i]][1]:
-                self.addMapping(dcList[i])
+
+            if not dcList[i] in self.dcIgnoreList:
+
+                if not dcList[i] in self.dcConfig:
+                    n = len(self.dcConfig)
+                    self.dcConfig[dcList[i]] = [2*n, 2*n+1]
+
+                if self.db.car.dcList[dcList[i]][1]:
+                    self.addMapping(dcList[i])
+
+        importExport.saveJson(self.dcConfig, self.db.dir + '/multi.json')
 
 class MultiSwitchMapDDUControl(MultiSwitchItem):
     def __init__(self, name, minValue , maxValue, step):
@@ -238,7 +254,7 @@ class MultiSwitchMapiRControl(MultiSwitchItem):
             self.step = step
 
     def increase(self):
-        print('Increase ' + self.name)
+        print('Increase {} - Button: {}'.format(self.name, self.dcConfig[self.name][1]))
 
     def decrease(self):
-        print('Decrease ' + self.name)
+        print('Decrease {} - Button: {}'.format(self.name, self.dcConfig[self.name][0]))
