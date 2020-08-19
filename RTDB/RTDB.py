@@ -4,6 +4,7 @@ import irsdk
 from libs import Car, Track
 import os
 from functionalities.libs import importExport
+from libs.IDDU import IDDUThread
 
 
 class RTDB:
@@ -94,11 +95,10 @@ class RTDB:
 
 
 # create thread to update RTDB
-class iRThread(threading.Thread):
-    def __init__(self, rtdbObj, rate):
-        threading.Thread.__init__(self)
-        self.rate = rate
-        self.db = rtdbObj
+class RTDBThread(IDDUThread):
+    def __init__(self, rate):
+        IDDUThread.__init__(self, rate)
+        # self.rate = rate
         self.ir = irsdk.IRSDK()
 
     def run(self):
