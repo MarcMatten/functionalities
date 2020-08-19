@@ -1,6 +1,4 @@
-import threading
 import time
-import irsdk
 from libs import Car, Track
 import os
 from functionalities.libs import importExport
@@ -8,6 +6,13 @@ from libs.IDDU import IDDUThread
 
 
 class RTDB:
+    dir = None
+    WeekendInfo = None
+    FuelTGTLiftPoints = None
+    car = None
+    track = None
+    map = None
+
     def __init__(self):
         timeStr = time.strftime("%H:%M:%S", time.localtime())
         self.initData = list()
@@ -96,10 +101,9 @@ class RTDB:
 
 # create thread to update RTDB
 class RTDBThread(IDDUThread):
+
     def __init__(self, rate):
         IDDUThread.__init__(self, rate)
-        # self.rate = rate
-        self.ir = irsdk.IRSDK()
 
     def run(self):
         while 1:
