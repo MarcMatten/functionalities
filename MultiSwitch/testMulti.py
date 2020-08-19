@@ -1,6 +1,7 @@
 from functionalities.MultiSwitch import MultiSwitch
 from functionalities.RTDB import RTDB
 from libs import Car
+import os
 
 calcData = {'startUp': False,
             'LastFuelLevel': 0,
@@ -32,6 +33,7 @@ calcData = {'startUp': False,
             'FlagException': False,
             'FlagExceptionVal': 0,
             'Alarm': [0]*10,
+            'dir': os.getcwd(),
             'VFuelAddOld': 1,
             'GreenTime': 0,
             'RemTimeValue': 0,
@@ -125,7 +127,9 @@ calcData = {'startUp': False,
             'P2PTime': 0,
             'DRSRemaining': 0,
             'dcFuelMixtureOld': 0,
+            'dcFuelMixture': 0,
             'dcThrottleShapeOld': 0,
+            'dcThrottleShape': 0,
             'dcTractionControlOld': 0,
             'dcTractionControl2Old': 0,
             'dcTractionControl': 0,
@@ -276,7 +280,8 @@ myRTDB.initialise(calcData, False)
 myRTDB.initialise(iDDUControlsNameInit, False)
 
 myRTDB.car = Car.Car('name')
-myRTDB.car.load('C:/Users/Marc/Documents/Projekte/iDDU/data/car/Porsche 718 Cayman GT4.json')
+# myRTDB.car.load('C:/Users/Marc/Documents/Projekte/iDDU/data/car/Porsche 718 Cayman GT4.json')
+myRTDB.car.load('C:/Users/Marc/Documents/Projekte/iDDU/data/car/Ferrari 488 GTE.json')
 
 dcList = list(myRTDB.car.dcList.keys())
 myRTDB.queryData.extend(dcList)
