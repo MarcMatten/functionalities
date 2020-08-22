@@ -73,7 +73,10 @@ def roundedStr0(x):
     if type(x) is int or type(x) is float:
         return '{0:.0f}'.format(np.round(x, 0))
     else:
-        return "-"
+        if type(x) is bool:
+            return str(x)
+        else:
+            return "-"
 
 
 def roundedStr1(x, n):

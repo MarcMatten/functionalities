@@ -6,7 +6,7 @@ from libs.IDDU import IDDUThread
 
 
 class RTDB:
-    dir = None
+    dir = os.getcwd()
     WeekendInfo = None
     FuelTGTLiftPoints = None
     car = None
@@ -29,6 +29,13 @@ class RTDB:
         self.initData.extend(temp)
         if BQueryData:
             self.queryData.extend(list(data.keys()))
+
+        self.car = Car.Car('default')
+        self.car.load(self.dir + '/data/car/default.json')
+        # self.car.load(self.dir + '/data/car/Ferrari 488 GTE.json')
+        # self.car.load(self.dir + '/data/car/Pro Mazda.json')
+        self.track = Track.Track('default')
+        self.track.load(self.dir + '/data/track/default.json')
 
     def get(self, string):
         return self.__getattribute__(string)
