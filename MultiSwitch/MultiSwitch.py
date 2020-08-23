@@ -8,12 +8,12 @@ from libs.IDDU import IDDUItem, IDDUThread
 
 class MultiSwitchItem(IDDUItem):
     # db = 0
-    NButtonIncMap = 0
-    NButtonDecMap = 1
-    NButtonIncValue = 2
-    NButtonDecValue = 3
+    NButtonIncMap = 23
+    NButtonDecMap = 22
+    NButtonIncValue = 9
+    NButtonDecValue = 8
 
-    dcIgnoreList = ['dcHeadlightFlash', 'dcPitSpeedLimiterToggle', 'dcStarter', 'dcTractionControlToggle', 'dcTearOffVisor']
+    dcIgnoreList = ['dcHeadlightFlash', 'dcPitSpeedLimiterToggle', 'dcStarter', 'dcTractionControlToggle', 'dcTearOffVisor', 'dcPushToPass', 'dcDashPage']
 
     def __init__(self):
         IDDUItem.__init__(self)
@@ -66,11 +66,19 @@ class MultiSwitch(MultiSwitchThread):
             # observe input controller
             events = self.pygame.event.get()
             for event in events:
+
                 # if event.type == pygame.KEYDOWN:
                 #     print(pygame.key.name(event.key))
                 if event.type == self.pygame.JOYBUTTONDOWN:
                     # print(event.type)
                     # print(event)
+                    if event.button == 25:
+                        if self.db.NDDUPage == 1:
+                            self.db.NDDUPage = 2
+                        else:
+                            self.db.NDDUPage = 1
+
+
                     if event.button == self.NButtonIncMap:
                         if self.NMultiState == 0:
                             self.NMultiState = 1
@@ -78,8 +86,8 @@ class MultiSwitch(MultiSwitchThread):
                         else:
                             if self.NMultiState == 1:
                                 NCurrentMapIR = self.NCurrentMapIR + 1
-                                if NCurrentMapIR > len(mapIRList)-1:
-                                    NCurrentMapIR = NCurrentMapIR - len(mapIRList)
+                                if NCurrentMapIR > len(self.mapIRList)-1:
+                                    NCurrentMapIR = NCurrentMapIR - len(self.mapIRList)
 
                                 self.NCurrentMapIR = NCurrentMapIR
                                 self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
@@ -93,6 +101,7 @@ class MultiSwitch(MultiSwitchThread):
                                 self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
 
                         self.tMultiChange = time.time()
+                        self.db.dcChangeTime = time.time()
 
                         # print('NMultiState: {} - NCurrentMapDDU: {} - NCurrentMapIR: {}'.format(self.NMultiState, self.mapDDUList[self.NCurrentMapDDU], self.mapIRList[self.NCurrentMapIR]))
 
@@ -104,7 +113,7 @@ class MultiSwitch(MultiSwitchThread):
                             if self.NMultiState == 1:
                                 NCurrentMapIR = self.NCurrentMapIR - 1
                                 if NCurrentMapIR < 0:
-                                    NCurrentMapIR = len(mapIRList) + NCurrentMapIR
+                                    NCurrentMapIR = len(self.mapIRList) + NCurrentMapIR
 
                                 self.NCurrentMapIR = NCurrentMapIR
 
@@ -122,6 +131,7 @@ class MultiSwitch(MultiSwitchThread):
                             # print('Current map: {} -  {}'.format(self.NCurrentMap, temp[self.NCurrentMap]))
 
                         self.tMultiChange = time.time()
+                        self.db.dcChangeTime = time.time()
 
                         # print('NMultiState: {} - NCurrentMapDDU: {} - NCurrentMapIR: {}'.format(self.NMultiState, self.mapDDUList[self.NCurrentMapDDU], self.mapIRList[self.NCurrentMapIR]))
 
@@ -130,13 +140,14 @@ class MultiSwitch(MultiSwitchThread):
                             self.mapIR['dcBrakeBias'].increase()
                         else:
                             if self.NMultiState == 1:
-                                self.mapIR[mapIRList[self.NCurrentMapIR]].increase()
+                                self.mapIR[self.mapIRList[self.NCurrentMapIR]].increase()
                                 self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
                             elif self.NMultiState == 2:
                                 self.mapDDU[mapDDUList[self.NCurrentMapDDU]].increase()
                                 self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
 
                         self.tMultiChange = time.time()
+                        self.db.dcChangeTime = time.time()
 
                         # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
 
@@ -145,15 +156,14 @@ class MultiSwitch(MultiSwitchThread):
                             self.mapIR['dcBrakeBias'].decrease()
                         else:
                             if self.NMultiState == 1:
-                                self.mapIR[mapIRList[self.NCurrentMapIR]].decrease()
+                                self.mapIR[self.mapIRList[self.NCurrentMapIR]].decrease()
                                 self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
                             elif self.NMultiState == 2:
                                 self.mapDDU[mapDDUList[self.NCurrentMapDDU]].decrease()
                                 self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
 
                         self.tMultiChange = time.time()
-
-                    self.db.dcChangeTime = time.time()
+                        self.db.dcChangeTime = time.time()
 
                         # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
 
