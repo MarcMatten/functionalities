@@ -62,127 +62,129 @@ class MultiSwitch(MultiSwitchThread):
             if self.db.BMultiInitRequest:
                 self.initCar()
                 self.db.BMultiInitRequest = False
+                
+            if self.pygame.display.get_init() == 1:
 
-            # observe input controller
-            events = self.pygame.event.get()
-            for event in events:
+                # observe input controller
+                events = self.pygame.event.get()
+                for event in events:
 
-                # if event.type == pygame.KEYDOWN:
-                #     print(pygame.key.name(event.key))
-                if event.type == self.pygame.JOYBUTTONDOWN:
-                    # print(event.type)
-                    # print(event)
-                    if event.button == 25:
-                        if self.db.NDDUPage == 1:
-                            self.db.NDDUPage = 2
-                        else:
-                            self.db.NDDUPage = 1
+                    # if event.type == pygame.KEYDOWN:
+                    #     print(pygame.key.name(event.key))
+                    if event.type == self.pygame.JOYBUTTONDOWN:
+                        # print(event.type)
+                        # print(event)
+                        if event.button == 25:
+                            if self.db.NDDUPage == 1:
+                                self.db.NDDUPage = 2
+                            else:
+                                self.db.NDDUPage = 1
 
 
-                    if event.button == self.NButtonIncMap:
-                        if self.NMultiState == 0:
-                            self.NMultiState = 1
-                            self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
-                        else:
-                            if self.NMultiState == 1:
-                                NCurrentMapIR = self.NCurrentMapIR + 1
-                                if NCurrentMapIR > len(self.mapIRList)-1:
-                                    NCurrentMapIR = NCurrentMapIR - len(self.mapIRList)
-
-                                self.NCurrentMapIR = NCurrentMapIR
+                        if event.button == self.NButtonIncMap:
+                            if self.NMultiState == 0:
+                                self.NMultiState = 1
                                 self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
-                            elif self.NMultiState == 2:
-                                NCurrentMapDDU = self.NCurrentMapDDU + 1
-                                if NCurrentMapDDU > len(mapDDUList)-1:
-                                    NCurrentMapDDU = NCurrentMapDDU - len(mapDDUList)
+                            else:
+                                if self.NMultiState == 1:
+                                    NCurrentMapIR = self.NCurrentMapIR + 1
+                                    if NCurrentMapIR > len(self.mapIRList)-1:
+                                        NCurrentMapIR = NCurrentMapIR - len(self.mapIRList)
 
-                                self.NCurrentMapDDU = NCurrentMapDDU
+                                    self.NCurrentMapIR = NCurrentMapIR
+                                    self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
+                                elif self.NMultiState == 2:
+                                    NCurrentMapDDU = self.NCurrentMapDDU + 1
+                                    if NCurrentMapDDU > len(mapDDUList)-1:
+                                        NCurrentMapDDU = NCurrentMapDDU - len(mapDDUList)
 
+                                    self.NCurrentMapDDU = NCurrentMapDDU
+
+                                    self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
+
+                            self.tMultiChange = time.time()
+                            self.db.dcChangeTime = time.time()
+
+                            # print('NMultiState: {} - NCurrentMapDDU: {} - NCurrentMapIR: {}'.format(self.NMultiState, self.mapDDUList[self.NCurrentMapDDU], self.mapIRList[self.NCurrentMapIR]))
+
+                        elif event.button == self.NButtonDecMap:
+                            if self.NMultiState == 0:
+                                self.NMultiState = 2
                                 self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
+                            else:
+                                if self.NMultiState == 1:
+                                    NCurrentMapIR = self.NCurrentMapIR - 1
+                                    if NCurrentMapIR < 0:
+                                        NCurrentMapIR = len(self.mapIRList) + NCurrentMapIR
 
-                        self.tMultiChange = time.time()
-                        self.db.dcChangeTime = time.time()
+                                    self.NCurrentMapIR = NCurrentMapIR
 
-                        # print('NMultiState: {} - NCurrentMapDDU: {} - NCurrentMapIR: {}'.format(self.NMultiState, self.mapDDUList[self.NCurrentMapDDU], self.mapIRList[self.NCurrentMapIR]))
+                                    self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
 
-                    elif event.button == self.NButtonDecMap:
-                        if self.NMultiState == 0:
-                            self.NMultiState = 2
-                            self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
-                        else:
-                            if self.NMultiState == 1:
-                                NCurrentMapIR = self.NCurrentMapIR - 1
-                                if NCurrentMapIR < 0:
-                                    NCurrentMapIR = len(self.mapIRList) + NCurrentMapIR
+                                elif self.NMultiState == 2:
+                                    NCurrentMapDDU = self.NCurrentMapDDU - 1
+                                    if NCurrentMapDDU < 0:
+                                        NCurrentMapDDU = len(mapDDUList) + NCurrentMapDDU
 
-                                self.NCurrentMapIR = NCurrentMapIR
+                                    self.NCurrentMapDDU = NCurrentMapDDU
 
-                                self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
+                                    self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
 
-                            elif self.NMultiState == 2:
-                                NCurrentMapDDU = self.NCurrentMapDDU - 1
-                                if NCurrentMapDDU < 0:
-                                    NCurrentMapDDU = len(mapDDUList) + NCurrentMapDDU
+                                # print('Current map: {} -  {}'.format(self.NCurrentMap, temp[self.NCurrentMap]))
 
-                                self.NCurrentMapDDU = NCurrentMapDDU
+                            self.tMultiChange = time.time()
+                            self.db.dcChangeTime = time.time()
 
-                                self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
+                            # print('NMultiState: {} - NCurrentMapDDU: {} - NCurrentMapIR: {}'.format(self.NMultiState, self.mapDDUList[self.NCurrentMapDDU], self.mapIRList[self.NCurrentMapIR]))
 
-                            # print('Current map: {} -  {}'.format(self.NCurrentMap, temp[self.NCurrentMap]))
+                        elif event.button == self.NButtonIncValue:
+                            if self.NMultiState == 0:
+                                self.mapIR['dcBrakeBias'].increase()
+                            else:
+                                if self.NMultiState == 1:
+                                    self.mapIR[self.mapIRList[self.NCurrentMapIR]].increase()
+                                    self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
+                                elif self.NMultiState == 2:
+                                    self.mapDDU[mapDDUList[self.NCurrentMapDDU]].increase()
+                                    self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
 
-                        self.tMultiChange = time.time()
-                        self.db.dcChangeTime = time.time()
+                            self.tMultiChange = time.time()
+                            self.db.dcChangeTime = time.time()
 
-                        # print('NMultiState: {} - NCurrentMapDDU: {} - NCurrentMapIR: {}'.format(self.NMultiState, self.mapDDUList[self.NCurrentMapDDU], self.mapIRList[self.NCurrentMapIR]))
+                            # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
 
-                    elif event.button == self.NButtonIncValue:
-                        if self.NMultiState == 0:
-                            self.mapIR['dcBrakeBias'].increase()
-                        else:
-                            if self.NMultiState == 1:
-                                self.mapIR[self.mapIRList[self.NCurrentMapIR]].increase()
-                                self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
-                            elif self.NMultiState == 2:
-                                self.mapDDU[mapDDUList[self.NCurrentMapDDU]].increase()
-                                self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
+                        elif event.button == self.NButtonDecValue:
+                            if self.NMultiState == 0:
+                                self.mapIR['dcBrakeBias'].decrease()
+                            else:
+                                if self.NMultiState == 1:
+                                    self.mapIR[self.mapIRList[self.NCurrentMapIR]].decrease()
+                                    self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
+                                elif self.NMultiState == 2:
+                                    self.mapDDU[mapDDUList[self.NCurrentMapDDU]].decrease()
+                                    self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
 
-                        self.tMultiChange = time.time()
-                        self.db.dcChangeTime = time.time()
+                            self.tMultiChange = time.time()
+                            self.db.dcChangeTime = time.time()
 
+                            # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
+
+
+
+                # in case of relevant change inrease or decrese value and send
+                # if iRacing Control forward command via vjoy
+
+                # execute this loop while iRacing is running
+                # print('running')
+                # self.j.set_button(1,1)
+                # time.sleep(self.rate)
+                # self.j.set_button(1,0)
+                # time.sleep(self.rate)
+
+                if time.time() > (self.tMultiChange + 2):
+                    if not self.NMultiState == 0:
+                        self.NMultiState = 0
                         # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
-
-                    elif event.button == self.NButtonDecValue:
-                        if self.NMultiState == 0:
-                            self.mapIR['dcBrakeBias'].decrease()
-                        else:
-                            if self.NMultiState == 1:
-                                self.mapIR[self.mapIRList[self.NCurrentMapIR]].decrease()
-                                self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
-                            elif self.NMultiState == 2:
-                                self.mapDDU[mapDDUList[self.NCurrentMapDDU]].decrease()
-                                self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
-
-                        self.tMultiChange = time.time()
-                        self.db.dcChangeTime = time.time()
-
-                        # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
-
-
-
-            # in case of relevant change inrease or decrese value and send
-            # if iRacing Control forward command via vjoy
-
-            # execute this loop while iRacing is running
-            # print('running')
-            # self.j.set_button(1,1)
-            # time.sleep(self.rate)
-            # self.j.set_button(1,0)
-            # time.sleep(self.rate)
-
-            if time.time() > (self.tMultiChange + 2):
-                if not self.NMultiState == 0:
-                    self.NMultiState = 0
-                    # print('NCurrentMap: {} - MapItem: {} - NMultiState: {}'.format(self.NCurrentMap, temp[self.NCurrentMap], self.NMultiState))
 
 
             time.sleep(self.rate)
@@ -273,7 +275,7 @@ class MultiSwitchMapiRControl(MultiSwitchItem):
             self.step = step
 
     def increase(self):
-        self.pressButton(self.dcConfig[self.name][1]+1, 0.1)
+        self.pressButton(self.dcConfig[self.name][1]+1, 0.05)
 
     def decrease(self):
-        self.pressButton(self.dcConfig[self.name][0]+1, 0.1)
+        self.pressButton(self.dcConfig[self.name][0]+1, 0.05)
