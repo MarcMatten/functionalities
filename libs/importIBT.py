@@ -2,6 +2,7 @@ import irsdk
 import numpy as np
 import scipy.signal
 from functionalities.libs import importExport
+import matplotlib.pyplot as plt
 
 # TODO: better logging
 
@@ -53,9 +54,15 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
         indices = []
         if lap in ['f', 'F', 'fastest', 'Fastest', 'FASTERST']:  # fastest lap only
             # find the fastest lap
-            NLapTimesIndex = scipy.signal.find_peaks(np.array(temp['LapCurrentLapTime']), prominence=10)  # TODO: does this always work?
-            NLapTimeFastestIndex = np.argmin(np.array(temp['LapCurrentLapTime'])[NLapTimesIndex[0]])
-            NLapFastest = temp['Lap'][NLapTimesIndex[0][NLapTimeFastestIndex]]
+            NLapStartIndex = scipy.signal.find_peaks(1 - np.array(temp['LapDistPct']), height=(0.98, 1.02))
+
+            tLap = []
+            NLap = []
+            for q in range(0, len(NLapStartIndex[0])-1):
+                tLap.append(temp['SessionTime'][NLapStartIndex[0][q+1]-1] - temp['SessionTime'][NLapStartIndex[0][q]])
+                NLap.append(temp['Lap'][NLapStartIndex[0][q]])
+
+            NLapFastest = NLap[np.argmin(tLap)]
 
             # get all indices for the fastest lap
             indices = np.argwhere(temp['Lap'] == NLapFastest)[:, 0]
