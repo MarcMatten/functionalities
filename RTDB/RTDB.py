@@ -3,12 +3,15 @@ from libs import Car, Track
 import os
 from functionalities.libs import importExport
 from libs.IDDU import IDDUThread
+import numpy as np
 
 
 class RTDB:
     dir = os.getcwd()
     WeekendInfo = None
     FuelTGTLiftPoints = None
+    VFuelTgtOffset = 0
+    VFuelTgt = 100
     car = None
     track = None
     map = None
@@ -102,6 +105,9 @@ class RTDB:
         temp = list(data.items())
         for i in range(0, len(data)):
             self.FuelTGTLiftPoints.__setitem__(temp[i][0], temp[i][1])
+
+        self.VFuelTgtOffset = 0
+        self.VFuelTgt = np.max(self.FuelTGTLiftPoints['VFuelTGT'])
 
         print(time.strftime("%H:%M:%S", time.localtime()) + ':\tImported ' + path)
 
