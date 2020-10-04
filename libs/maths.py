@@ -114,11 +114,6 @@ def createTrack(x):
     dx = np.array(0)
     dy = np.array(0)
 
-    dist = x['LapDistPct'] * 100
-
-    dist[0] = 0
-    dist[-1] = 100
-
     dx = np.append(dx, np.cos(x['Yaw'][0:-1]) * x['VelocityX'][0:-1] * x['dt'] - np.sin(x['Yaw'][0:-1]) * x['VelocityY'][0:-1] * x['dt'])
     dy = np.append(dy, np.cos(x['Yaw'][0:-1]) * x['VelocityY'][0:-1] * x['dt'] + np.sin(x['Yaw'][0:-1]) * x['VelocityX'][0:-1] * x['dt'])
 

@@ -2,7 +2,6 @@ import irsdk
 import numpy as np
 import scipy.signal
 from functionalities.libs import importExport
-import matplotlib.pyplot as plt
 
 # TODO: better logging
 
