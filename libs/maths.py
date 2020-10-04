@@ -109,3 +109,35 @@ def angleVertical(dx, dy):
             a = np.pi * 1.5
 
     return a
+
+def createTrack(x):
+    dx = np.array(0)
+    dy = np.array(0)
+
+    dist = x['LapDistPct'] * 100
+
+    dist[0] = 0
+    dist[-1] = 100
+
+    dx = np.append(dx, np.cos(x['Yaw'][0:-1]) * x['VelocityX'][0:-1] * x['dt'] - np.sin(x['Yaw'][0:-1]) * x['VelocityY'][0:-1] * x['dt'])
+    dy = np.append(dy, np.cos(x['Yaw'][0:-1]) * x['VelocityY'][0:-1] * x['dt'] + np.sin(x['Yaw'][0:-1]) * x['VelocityX'][0:-1] * x['dt'])
+
+    tempx = np.cumsum(dx, dtype=float).tolist()
+    tempy = np.cumsum(dy, dtype=float).tolist()
+
+    xError = tempx[-1] - tempx[0]
+    yError = tempy[-1] - tempy[0]
+
+    tempdx = np.array(0)
+    tempdy = np.array(0)
+
+    tempdx = np.append(tempdx, dx[1:len(dx)] - xError / (len(dx) - 1))
+    tempdy = np.append(tempdy, dy[1:len(dy)] - yError / (len(dy) - 1))
+
+    x = np.cumsum(tempdx, dtype=float)
+    y = np.cumsum(tempdy, dtype=float)
+
+    x[-1] = 0
+    y[-1] = 0
+
+    return x, y
