@@ -15,6 +15,8 @@ class RTDB:
     car = None
     track = None
     map = None
+    init = True
+    WasOnTrack = False
 
     def __init__(self):
         timeStr = time.strftime("%H:%M:%S", time.localtime())
@@ -108,6 +110,9 @@ class RTDB:
 
         self.VFuelTgtOffset = 0
         self.VFuelTgt = np.max(self.FuelTGTLiftPoints['VFuelTGT'])
+
+        self.init = True
+        self.WasOnTrack = False
 
         print(time.strftime("%H:%M:%S", time.localtime()) + ':\tImported ' + path)
 
