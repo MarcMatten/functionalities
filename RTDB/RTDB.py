@@ -35,8 +35,6 @@ class RTDB:
 
         self.car = Car.Car('default')
         self.car.load(self.dir + '/data/car/default.json')
-        # self.car.load(self.dir + '/data/car/Ferrari 488 GTE.json')
-        # self.car.load(self.dir + '/data/car/Pro Mazda.json')
         self.track = Track.Track('default')
         self.track.load(self.dir + '/data/track/default.json')
 
