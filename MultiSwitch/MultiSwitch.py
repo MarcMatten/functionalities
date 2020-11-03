@@ -176,7 +176,7 @@ class MultiSwitchMapDDUControl(MultiSwitchItem):
     def __init__(self, name, minValue , maxValue, step):
         MultiSwitchItem.__init__(self)
         self.name = name
-        self.type = type(self.db.__getattribute__(name))
+        self.type = type(self.db.config[self.name])
         if self.type is not bool:
             self.minValue = minValue
             self.maxValue = maxValue
@@ -184,17 +184,17 @@ class MultiSwitchMapDDUControl(MultiSwitchItem):
 
     def increase(self):
         if self.type is not bool:
-            newVal = np.min([self.db.__getattribute__(self.name) + self.step, self.maxValue])
+            newVal = np.min([self.db.config[self.name] + self.step, self.maxValue])
             self.db.__setattr__(self.name, newVal)
         else:
-            self.db.__setattr__(self.name, not self.db.__getattribute__(self.name))
+            self.db.__setattr__(self.name, not self.db.config[self.name])
 
     def decrease(self):
         if self.type is not bool:
-            newVal = np.max([self.db.__getattribute__(self.name) - self.step, self.minValue])
+            newVal = np.max([self.db.config[self.name] - self.step, self.minValue])
             self.db.__setattr__(self.name, newVal)
         else:
-            self.db.__setattr__(self.name, not self.db.__getattribute__(self.name))
+            self.db.__setattr__(self.name, not self.db.config[self.name])
 
 class MultiSwitchMapiRControl(MultiSwitchItem):
     def __init__(self, name, minValue , maxValue, step):
