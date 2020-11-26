@@ -63,9 +63,12 @@ class MultiSwitch(MultiSwitchThread):
                         if event.button == self.NButtonIncMap:
                             if self.NMultiState == 0:
                                 self.NMultiState = 1
-                                self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
+                                if len(self.mapIRList) > 0:
+                                    self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
+                                else:
+                                    self.NMultiState = 2
                             else:
-                                if self.NMultiState == 1:
+                                if self.NMultiState == 1 and len(self.mapIRList) > 0:
                                     NCurrentMapIR = self.NCurrentMapIR + 1
                                     if NCurrentMapIR > len(self.mapIRList)-1:
                                         NCurrentMapIR = NCurrentMapIR - len(self.mapIRList)
@@ -89,7 +92,7 @@ class MultiSwitch(MultiSwitchThread):
                                 self.NMultiState = 2
                                 self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
                             else:
-                                if self.NMultiState == 1:
+                                if self.NMultiState == 1 and len(self.mapIRList) > 0:
                                     NCurrentMapIR = self.NCurrentMapIR - 1
                                     if NCurrentMapIR < 0:
                                         NCurrentMapIR = len(self.mapIRList) + NCurrentMapIR
@@ -156,6 +159,10 @@ class MultiSwitch(MultiSwitchThread):
         IDDUItem.dcConfig = importExport.loadJson(self.db.dir + '/data/configs/multi.json')
 
         dcList = list(self.db.car.dcList.keys())
+
+        self.mapIR = {}
+        self.mapIRList = []
+
         for i in range(0, len(dcList)):
 
             if not dcList[i] in self.dcIgnoreList:
