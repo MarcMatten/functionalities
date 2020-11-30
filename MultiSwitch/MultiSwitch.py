@@ -114,29 +114,31 @@ class MultiSwitch(MultiSwitchThread):
                             self.db.dcChangeTime = time.time()
 
                         elif event.button == self.NButtonIncValue:
-                            if self.NMultiState == 0:
+                            if self.NMultiState == 0 and 'dcBrakeBias' in self.db.car.dcList:
                                 self.mapIR['dcBrakeBias'].increase()
+                            elif self.NMultiState == 1:
+                                self.mapIR[self.mapIRList[self.NCurrentMapIR]].increase()
+                                self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
+                            elif self.NMultiState == 2:
+                                self.mapDDU[self.mapDDUList[self.NCurrentMapDDU]].increase()
+                                self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
                             else:
-                                if self.NMultiState == 1:
-                                    self.mapIR[self.mapIRList[self.NCurrentMapIR]].increase()
-                                    self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
-                                elif self.NMultiState == 2:
-                                    self.mapDDU[self.mapDDUList[self.NCurrentMapDDU]].increase()
-                                    self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
+                                break
 
                             self.tMultiChange = time.time()
                             self.db.dcChangeTime = time.time()
 
                         elif event.button == self.NButtonDecValue:
-                            if self.NMultiState == 0:
+                            if self.NMultiState == 0 and 'dcBrakeBias' in self.db.car.dcList:
                                 self.mapIR['dcBrakeBias'].decrease()
+                            elif self.NMultiState == 1:
+                                self.mapIR[self.mapIRList[self.NCurrentMapIR]].decrease()
+                                self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
+                            elif self.NMultiState == 2:
+                                self.mapDDU[self.mapDDUList[self.NCurrentMapDDU]].decrease()
+                                self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
                             else:
-                                if self.NMultiState == 1:
-                                    self.mapIR[self.mapIRList[self.NCurrentMapIR]].decrease()
-                                    self.db.dcChangedItems = [self.mapIRList[self.NCurrentMapIR]]
-                                elif self.NMultiState == 2:
-                                    self.mapDDU[self.mapDDUList[self.NCurrentMapDDU]].decrease()
-                                    self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
+                                break
 
                             self.tMultiChange = time.time()
                             self.db.dcChangeTime = time.time()

@@ -2,7 +2,7 @@ import numpy as np
 
 
 def convertTimeMMSSsss(sec):
-    if type(sec) is int or type(sec) is float:
+    if type(sec) is int or type(sec) is float or type(sec).__module__ == np.__name__:
         if sec < 0:
             sign = '-'
             sec = -sec
@@ -23,7 +23,7 @@ def convertTimeMMSSsss(sec):
 
 
 def convertDelta(sec):
-    if type(sec) is int or type(sec) is float:
+    if type(sec) is int or type(sec) is float or type(sec).__module__ == np.__name__:
         if sec < 0:
             sign = '-'
             sec = -sec
@@ -44,7 +44,7 @@ def convertDelta(sec):
 
 
 def convertTimeHHMMSS(sec):
-    if type(sec) is int or type(sec) is float:
+    if type(sec) is int or type(sec) is float or type(sec).__module__ == np.__name__:
         if sec < 0:
             sign = '-'
             sec = -sec
@@ -70,7 +70,7 @@ def convertTimeHHMMSS(sec):
 
 
 def roundedStr0(x):
-    if type(x) is int or type(x) is float:
+    if type(x) is int or type(x) is float or type(x).__module__ == np.__name__:
         return '{0:.0f}'.format(np.round(x, 0))
     else:
         if type(x) is bool:
