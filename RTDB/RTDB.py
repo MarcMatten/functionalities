@@ -27,7 +27,7 @@ class RTDB:
         self.timeStr = time.strftime("%H:%M:%S", time.localtime())
         print(timeStr + ': RTDB initialised!')
 
-    def initialise(self, data, BQueryData):
+    def initialise(self, data, BQueryData, BSnapshot):
         temp = list(data.items())
         for i in range(0, len(data)):
             self.__setattr__(temp[i][0], temp[i][1])
@@ -35,10 +35,14 @@ class RTDB:
         if BQueryData:
             self.queryData.extend(list(data.keys()))
 
-        self.car = Car.Car('default')
-        self.car.load(self.dir + '/data/car/default.json')
-        self.track = Track.Track('default')
-        self.track.load(self.dir + '/data/track/default.json')
+        if not BSnapshot:
+            self.BSnapshotMode = False
+            self.car = Car.Car('default')
+            self.car.load(self.dir + '/data/car/default.json')
+            self.track = Track.Track('default')
+            self.track.load(self.dir + '/data/track/default.json')
+        else:
+            self.BSnapshotMode = True
 
     def get(self, string):
         return self.__getattribute__(string)
@@ -79,12 +83,13 @@ class RTDB:
         print(time.strftime("%H:%M:%S", time.localtime()) + ': Saved snapshot: ' + nameStr+'.json')
 
     def loadSnapshot(self, name):
+        self.StopDDU = True
+
         path = self.dir + '/data/snapshots/' + name
 
-        self.StopDDU = True
         self.StartDDU = True
 
-        data = importExport.loadJson(path)
+        data = importExport.loadJson(path + '.json')
 
         carPath = path + '_car.json'
         self.car = Car.Car('default')
@@ -95,7 +100,13 @@ class RTDB:
         self.track.load(trackPath)
         self.map = self.track.map
 
-        self.initialise(data, False)
+
+
+        data['DDUrunning'] = False
+        data['StopDDU'] = True
+        data['StartDDU'] = False
+
+        self.initialise(data, False, True)
 
         print(time.strftime("%H:%M:%S", time.localtime()) + ': Loaded RTDB snapshot: ' + name +'.json')
 

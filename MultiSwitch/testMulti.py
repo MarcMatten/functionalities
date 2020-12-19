@@ -276,8 +276,8 @@ for i in range(0, len(iDDUControlsName)):
         iDDUControlsNameInit[iDDUControlsName[i]] = iDDUControls[iDDUControlsName[i]][0]
 
 myRTDB = RTDB.RTDB()
-myRTDB.initialise(calcData, False)
-myRTDB.initialise(iDDUControlsNameInit, False)
+myRTDB.initialise(calcData, False, False)
+myRTDB.initialise(iDDUControlsNameInit, False, False)
 
 myRTDB.car = Car.Car('name')
 # myRTDB.car.load('C:/Users/Marc/Documents/Projekte/iDDU/data/car/Porsche 718 Cayman GT4.json')
