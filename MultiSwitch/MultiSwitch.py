@@ -53,14 +53,14 @@ class MultiSwitch(MultiSwitchThread):
                 for event in events:
 
                     if event.type == self.pygame.JOYBUTTONDOWN:
-                        if event.button == 25:
+                        if event.button == self.db.config['ButtonAssignments']['DDUPage']['Button'] and self.pygame.joystick.Joystick(event.joy).get_name() == self.db.config['ButtonAssignments']['DDUPage']['Joystick']:
                             if self.db.NDDUPage == 1:
                                 self.db.NDDUPage = 2
                             else:
                                 self.db.NDDUPage = 1
 
 
-                        if event.button == self.NButtonIncMap:
+                        if event.button == self.db.config['ButtonAssignments']['NextMulti']['Button'] and self.pygame.joystick.Joystick(event.joy).get_name() == self.db.config['ButtonAssignments']['NextMulti']['Joystick']:
                             if self.NMultiState == 0:
                                 self.NMultiState = 1
                                 if len(self.mapIRList) > 0:
@@ -87,7 +87,7 @@ class MultiSwitch(MultiSwitchThread):
                             self.tMultiChange = time.time()
                             self.db.dcChangeTime = time.time()
 
-                        elif event.button == self.NButtonDecMap:
+                        elif event.button == self.db.config['ButtonAssignments']['PreviousMulti']['Button'] and self.pygame.joystick.Joystick(event.joy).get_name() == self.db.config['ButtonAssignments']['PreviousMulti']['Joystick']:
                             if self.NMultiState == 0:
                                 self.NMultiState = 2
                                 self.db.dcChangedItems = [self.mapDDUList[self.NCurrentMapDDU]]
@@ -113,7 +113,7 @@ class MultiSwitch(MultiSwitchThread):
                             self.tMultiChange = time.time()
                             self.db.dcChangeTime = time.time()
 
-                        elif event.button == self.NButtonIncValue:
+                        elif event.button == self.db.config['ButtonAssignments']['MultiIncrease']['Button'] and self.pygame.joystick.Joystick(event.joy).get_name() == self.db.config['ButtonAssignments']['MultiIncrease']['Joystick']:
                             if self.NMultiState == 0 and 'dcBrakeBias' in self.db.car.dcList:
                                 self.mapIR['dcBrakeBias'].increase()
                             elif self.NMultiState == 1:
@@ -128,7 +128,7 @@ class MultiSwitch(MultiSwitchThread):
                             self.tMultiChange = time.time()
                             self.db.dcChangeTime = time.time()
 
-                        elif event.button == self.NButtonDecValue:
+                        elif event.button == self.db.config['ButtonAssignments']['MultiDecrease']['Button'] and self.pygame.joystick.Joystick(event.joy).get_name() == self.db.config['ButtonAssignments']['MultiDecrease']['Joystick']:
                             if self.NMultiState == 0 and 'dcBrakeBias' in self.db.car.dcList:
                                 self.mapIR['dcBrakeBias'].decrease()
                             elif self.NMultiState == 1:
