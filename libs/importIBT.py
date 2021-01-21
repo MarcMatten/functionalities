@@ -7,6 +7,18 @@ from functionalities.libs import importExport
 
 def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMap.csv'):
 
+    # read in metadata
+    c = dict()
+
+    ir = irsdk.IRSDK()
+    ir.startup(test_file=ibtPath)
+
+    c['CarSetup'] = ir['CarSetup']
+    c['DriverInfo'] = ir['DriverInfo']
+    c['WeekendInfo'] = ir['WeekendInfo']
+
+    ir.shutdown()
+
     # read in telemetry channels
     ir_ibt = irsdk.IBT()
     ir_ibt.open(ibtPath)
@@ -19,7 +31,7 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
     channelMap = importExport.loadCSV(channelMapPath)
 
     # define telemetry channels to import
-    channelsExport= []
+    channelsExport = []
 
     if channels is None:
         channelsExport = var_headers_names
@@ -53,13 +65,21 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
         indices = []
         if lap in ['f', 'F', 'fastest', 'Fastest', 'FASTERST']:  # fastest lap only
             # find the fastest lap
-            NLapStartIndex = scipy.signal.find_peaks(1 - np.array(temp['LapDistPct']), height=(0.98, 1.02))
+            NLapStartIndex = scipy.signal.find_peaks(1 - np.array(temp['LapDistPct']), height=(0.98, 1.02), distance=600)
 
             tLap = []
             NLap = []
+            sLap = []
             for q in range(0, len(NLapStartIndex[0])-1):
                 tLap.append(temp['SessionTime'][NLapStartIndex[0][q+1]-1] - temp['SessionTime'][NLapStartIndex[0][q]])
+                print(temp['SessionTime'][NLapStartIndex[0][q+1]-1])
+                print(temp['SessionTime'][NLapStartIndex[0][q]])
+                sLap.append(temp['LapDist'][NLapStartIndex[0][q+1]-1])
                 NLap.append(temp['Lap'][NLapStartIndex[0][q]])
+
+            for r in range(0, len(tLap)):
+                if sLap[r] < float(c['WeekendInfo']['TrackLength'].split(' ')[0]) * 1000 * 0.95:
+                    tLap[r] = tLap[r] + 1000
 
             NLapFastest = NLap[np.argmin(tLap)]
 
@@ -81,23 +101,11 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
     ir_ibt.close()
 
     # channel mapping
-    c = dict()
-
     for i in range(0, len(channelsExport)):
         if channelsExport[i] in channelMap['iRacingChannelName']:
             index = channelMap['iRacingChannelName'].index(channelsExport[i])
             c[channelMap['ChannelName'][index]] = np.array(s[channelsExport[i]]) * float(channelMap['ConverstionFactor'][index])
         else:
             c[channelsExport[i]] = s[channelsExport[i]]
-
-    # read in metadata
-    ir = irsdk.IRSDK()
-    ir.startup(test_file=ibtPath)
-
-    c['CarSetup'] = ir['CarSetup']
-    c['DriverInfo'] = ir['DriverInfo']
-    c['WeekendInfo'] = ir['WeekendInfo']
-
-    ir.shutdown()
 
     return c, var_headers_names
