@@ -1,9 +1,8 @@
 import irsdk
 import numpy as np
 import scipy.signal
-from functionalities.libs import importExport
+from functionalities.libs import importExport, convertString
 
-# TODO: better logging
 
 def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMap.csv'):
 
@@ -65,26 +64,36 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
         indices = []
         if lap in ['f', 'F', 'fastest', 'Fastest', 'FASTERST']:  # fastest lap only
             # find the fastest lap
+            print('\t\t\t\tImporting fastest lap.')
             NLapStartIndex = scipy.signal.find_peaks(1 - np.array(temp['LapDistPct']), height=(0.98, 1.02), distance=600)
 
-            tLap = []
-            NLap = []
-            sLap = []
-            for q in range(0, len(NLapStartIndex[0])-1):
-                tLap.append(temp['SessionTime'][NLapStartIndex[0][q+1]-1] - temp['SessionTime'][NLapStartIndex[0][q]])
-                print(temp['SessionTime'][NLapStartIndex[0][q+1]-1])
-                print(temp['SessionTime'][NLapStartIndex[0][q]])
-                sLap.append(temp['LapDist'][NLapStartIndex[0][q+1]-1])
-                NLap.append(temp['Lap'][NLapStartIndex[0][q]])
+            if len(NLapStartIndex[0]) > 1:
+                print('\t\t\t\tFound following laps:')
+                tLap = []
+                NLap = []
+                sLap = []
 
-            for r in range(0, len(tLap)):
-                if sLap[r] < float(c['WeekendInfo']['TrackLength'].split(' ')[0]) * 1000 * 0.95:
-                    tLap[r] = tLap[r] + 1000
+                for q in range(0, len(NLapStartIndex[0])-1):
+                    tLap.append(temp['SessionTime'][NLapStartIndex[0][q+1]-1] - temp['SessionTime'][NLapStartIndex[0][q]])
+                    sLap.append(temp['LapDist'][NLapStartIndex[0][q+1]-1])
+                    NLap.append(temp['Lap'][NLapStartIndex[0][q]])
+                    print('\t\t\t\t\t{0}\t\t{1}'.format(NLap[q], convertString.convertTimeMMSSsss(tLap[q])))
 
-            NLapFastest = NLap[np.argmin(tLap)]
+                for r in range(0, len(tLap)):
+                    if sLap[r] < float(c['WeekendInfo']['TrackLength'].split(' ')[0]) * 1000 * 0.95:
+                        tLap.pop(r)
+                        # tLap[r] = tLap[r] + 1000
 
-            # get all indices for the fastest lap
-            indices = np.argwhere(temp['Lap'] == NLapFastest)[:, 0]
+                NLapFastest = NLap[np.argmin(tLap)]
+
+                # get all indices for the fastest lap
+                indices = np.argwhere(temp['Lap'] == NLapFastest)[:, 0]
+
+                print('\t\t\t\tImporting Lap {} ({})'.format(NLapFastest, convertString.convertTimeMMSSsss(min(tLap))))
+
+            else:
+                print('\t\t\t\tNo valid lap found!')
+                return None, None
 
         # lap number
         elif isinstance(lap, int):
@@ -108,4 +117,12 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
         else:
             c[channelsExport[i]] = s[channelsExport[i]]
 
-    return c, var_headers_names
+    # replacing tLap with SessionTime derivative
+    c['dt'] = np.diff(c['SessionTime'])
+    c['tLap'] = np.append(0, np.cumsum([c['dt']]))
+
+    # setting start and end value for LapDistPct
+    c['LapDistPct'][0] = 0
+    c['LapDistPct'][-1] = 1
+
+    return c, list(c.keys())

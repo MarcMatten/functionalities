@@ -39,10 +39,15 @@ def loadCSV(path):
         return f
 
 def loadJson(path: str):
-    with open(path) as jsonFile:
-        data = json.loads(jsonFile.read())
+    try:
+        with open(path) as jsonFile:
+            data = json.loads(jsonFile.read())
 
-    return data
+        return data
+
+    except Exception as e:
+        print("Exception {}: {} was raised!".format(type(e), e))
+
 
 def saveJson(data: dict, path: str):
 
