@@ -3,6 +3,7 @@ import numpy as np
 import scipy.signal
 from functionalities.libs import importExport, convertString
 
+defaultChannels = ['SessionTime', 'LapCurrentLapTime', 'LapDist','LapDistPct', 'Speed', 'Lap']
 
 def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMap.csv'):
 
@@ -44,7 +45,7 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
             else:
                 print('Error: <{}> neihter in list of iRacing channels nor in channel map! - Skipping this channel!'.format(channels[i]))
 
-    channelsExport.extend(['LapCurrentLapTime', 'LapDist', 'Speed', 'Lap'])
+    channelsExport.extend(defaultChannels)
     channelsExport = list(set(channelsExport))
 
     # import channels
