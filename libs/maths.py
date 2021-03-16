@@ -114,8 +114,8 @@ def createTrack(x):
     dx = np.array(0)
     dy = np.array(0)
 
-    dx = np.append(dx, np.cos(x['Yaw'][0:-1]) * x['VelocityX'][0:-1] * x['dt'] - np.sin(x['Yaw'][0:-1]) * x['VelocityY'][0:-1] * x['dt'])
-    dy = np.append(dy, np.cos(x['Yaw'][0:-1]) * x['VelocityY'][0:-1] * x['dt'] + np.sin(x['Yaw'][0:-1]) * x['VelocityX'][0:-1] * x['dt'])
+    dx = np.append(dx, np.cos(x['Yaw'][0:-1]) * x['vCarX'][0:-1] * x['dt'] - np.sin(x['Yaw'][0:-1]) * x['vCarY'][0:-1] * x['dt'])
+    dy = np.append(dy, np.cos(x['Yaw'][0:-1]) * x['vCarY'][0:-1] * x['dt'] + np.sin(x['Yaw'][0:-1]) * x['vCarX'][0:-1] * x['dt'])
 
     tempx = np.cumsum(dx, dtype=float).tolist()
     tempy = np.cumsum(dy, dtype=float).tolist()
