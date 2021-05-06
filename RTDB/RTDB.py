@@ -119,6 +119,7 @@ class RTDB:
 
         self.VFuelTgtOffset = 0
         self.VFuelTgt = np.max(self.FuelTGTLiftPoints['VFuelTGT'])
+        self.config['VFuelTgt'] = np.max(self.FuelTGTLiftPoints['VFuelTGT'])
 
         self.init = True
         self.WasOnTrack = False
