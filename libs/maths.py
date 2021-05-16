@@ -110,6 +110,7 @@ def angleVertical(dx, dy):
 
     return a
 
+
 def createTrack(x):
     dx = np.array(0)
     dy = np.array(0)
@@ -136,3 +137,23 @@ def createTrack(x):
     y[-1] = 0
 
     return x, y
+
+
+def strictly_increasing(L):
+    return all(x<y for x, y in zip(L, L[1:]))
+
+
+def strictly_decreasing(L):
+    return all(x>y for x, y in zip(L, L[1:]))
+
+
+def non_increasing(L):
+    return all(x>=y for x, y in zip(L, L[1:]))
+
+
+def non_decreasing(L):
+    return all(x<=y for x, y in zip(L, L[1:]))
+
+
+def monotonic(L):
+    return non_increasing(L) or non_decreasing(L)
