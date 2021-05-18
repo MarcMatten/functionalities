@@ -3,7 +3,7 @@ import numpy as np
 import scipy.signal
 from functionalities.libs import importExport, convertString
 
-defaultChannels = ['SessionTime', 'LapCurrentLapTime', 'LapDist','LapDistPct', 'Speed', 'Lap']
+defaultChannels = ['SessionTime', 'LapCurrentLapTime', 'LapDist', 'LapDistPct', 'Speed', 'Lap', 'FuelLevel']
 
 def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMap.csv'):
 
@@ -73,12 +73,14 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
                 tLap = []
                 NLap = []
                 sLap = []
+                VFuelLap = []
 
                 for q in range(0, len(NLapStartIndex[0])-1):
                     tLap.append(temp['SessionTime'][NLapStartIndex[0][q+1]-1] - temp['SessionTime'][NLapStartIndex[0][q]])
                     sLap.append(temp['LapDist'][NLapStartIndex[0][q+1]-1])
                     NLap.append(temp['Lap'][NLapStartIndex[0][q]])
-                    print('\t\t\t\t\t{0}\t\t{1}'.format(NLap[q], convertString.convertTimeMMSSsss(tLap[q])))
+                    VFuelLap.append(temp['FuelLevel'][NLapStartIndex[0][q]] - temp['FuelLevel'][NLapStartIndex[0][q+1]-1])
+                    print('\t\t\t\t\t{0}\t\t{1} s\t\t{2} l'.format(NLap[q], convertString.convertTimeMMSSsss(tLap[q]), convertString.convertTimeMMSSsss(VFuelLap[q])))
 
                 for r in range(0, len(tLap)):
                     if sLap[r] < float(c['WeekendInfo']['TrackLength'].split(' ')[0]) * 1000 * 0.95:
@@ -121,6 +123,7 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
     # replacing tLap with SessionTime derivative
     c['dt'] = np.diff(c['SessionTime'])
     c['tLap'] = np.append(0, np.cumsum([c['dt']]))
+    c['VFuelLap'] = c['VFuel'][0] - c['VFuel'][-1]
 
     # setting start and end value for LapDistPct
     c['LapDistPct'][0] = 0

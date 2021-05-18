@@ -9,3 +9,4 @@ FuelUsePerHour;l/h;QFuel;g/s;0.277778
 LapDist;m;sLap;m;1
 Alt;m;zTrack;m;1
 Clutch;1;rClutch;1;1
+FuelLevel;l;VFuel;l;1
