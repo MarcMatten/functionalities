@@ -80,7 +80,7 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
                     sLap.append(temp['LapDist'][NLapStartIndex[0][q+1]-1])
                     NLap.append(temp['Lap'][NLapStartIndex[0][q]])
                     VFuelLap.append(temp['FuelLevel'][NLapStartIndex[0][q]] - temp['FuelLevel'][NLapStartIndex[0][q+1]-1])
-                    print('\t\t\t\t\t{0}\t\t{1} s\t\t{2} l'.format(NLap[q], convertString.convertTimeMMSSsss(tLap[q]), convertString.convertTimeMMSSsss(VFuelLap[q])))
+                    print('\t\t\t\t\t{0}\t\t{1} min\t\t{2} l'.format(NLap[q], convertString.convertTimeMMSSsss(tLap[q]), convertString.convertTimeMMSSsss(VFuelLap[q])))
 
                 for r in range(0, len(tLap)):
                     if sLap[r] < float(c['WeekendInfo']['TrackLength'].split(' ')[0]) * 1000 * 0.95:
