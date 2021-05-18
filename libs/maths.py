@@ -110,12 +110,13 @@ def angleVertical(dx, dy):
 
     return a
 
+
 def createTrack(x):
     dx = np.array(0)
     dy = np.array(0)
 
-    dx = np.append(dx, np.cos(x['Yaw'][0:-1]) * x['VelocityX'][0:-1] * x['dt'] - np.sin(x['Yaw'][0:-1]) * x['VelocityY'][0:-1] * x['dt'])
-    dy = np.append(dy, np.cos(x['Yaw'][0:-1]) * x['VelocityY'][0:-1] * x['dt'] + np.sin(x['Yaw'][0:-1]) * x['VelocityX'][0:-1] * x['dt'])
+    dx = np.append(dx, np.cos(x['Yaw'][0:-1]) * x['vCarX'][0:-1] * x['dt'] - np.sin(x['Yaw'][0:-1]) * x['vCarY'][0:-1] * x['dt'])
+    dy = np.append(dy, np.cos(x['Yaw'][0:-1]) * x['vCarY'][0:-1] * x['dt'] + np.sin(x['Yaw'][0:-1]) * x['vCarX'][0:-1] * x['dt'])
 
     tempx = np.cumsum(dx, dtype=float).tolist()
     tempy = np.cumsum(dy, dtype=float).tolist()
@@ -136,3 +137,23 @@ def createTrack(x):
     y[-1] = 0
 
     return x, y
+
+
+def strictly_increasing(L):
+    return all(x<y for x, y in zip(L, L[1:]))
+
+
+def strictly_decreasing(L):
+    return all(x>y for x, y in zip(L, L[1:]))
+
+
+def non_increasing(L):
+    return all(x>=y for x, y in zip(L, L[1:]))
+
+
+def non_decreasing(L):
+    return all(x<=y for x, y in zip(L, L[1:]))
+
+
+def monotonic(L):
+    return non_increasing(L) or non_decreasing(L)

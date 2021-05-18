@@ -119,6 +119,7 @@ class RTDB:
 
         self.VFuelTgtOffset = 0
         self.VFuelTgt = np.max(self.FuelTGTLiftPoints['VFuelTGT'])
+        self.config['VFuelTgt'] = np.max(self.FuelTGTLiftPoints['VFuelTGT'])
 
         self.car.VFuelLap[self.FuelTGTLiftPoints['SFuelConfigTrackName']] = self.VFuelTgt
         self.car.save(self.dir)

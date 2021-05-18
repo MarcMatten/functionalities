@@ -3,7 +3,7 @@ import numpy as np
 import scipy.signal
 from functionalities.libs import importExport, convertString
 
-defaultChannels = ['SessionTime', 'LapCurrentLapTime', 'LapDist', 'LapDistPct', 'Speed', 'Lap', 'FuelLevel']
+defaultChannels = ['SessionTime', 'LapCurrentLapTime', 'LapDist', 'LapDistPct', 'Speed', 'Lap', 'FuelLevel', 'FuelUsePerHour']
 
 def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMap.csv'):
 
@@ -119,6 +119,10 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
             c[channelMap['ChannelName'][index]] = np.array(s[channelsExport[i]]) * float(channelMap['ConverstionFactor'][index])
         else:
             c[channelsExport[i]] = s[channelsExport[i]]
+
+    # fuel calcs
+    if 'QFuel' in channels or 'dmFuel' in channels:
+        c['QFuel'] = c['dmFuel'] / 1000 / c['DriverInfo']['DriverCarFuelKgPerLtr']  # l/s
 
     # replacing tLap with SessionTime derivative
     c['dt'] = np.diff(c['SessionTime'])

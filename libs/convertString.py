@@ -97,11 +97,13 @@ def roundedStr1(x, n):
         return "-"
 
 
-def roundedStr2(x):
+def roundedStr2(x, BPlus=False):
     if type(x) is int or type(x) is float or type(x).__module__ == np.__name__:
+        if BPlus:
+            if x > 0:
+                return '+{0:.2f}'.format(np.round(x, 2))
         return '{0:.2f}'.format(np.round(x, 2))
-    else:
-        return "-"
+    return "-"
 
 
 def roundedStr3(x):
