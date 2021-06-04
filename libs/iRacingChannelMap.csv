@@ -8,7 +8,8 @@ Brake;1;rBrake;1;1
 FuelUsePerHour;kg/h;dmFuel;g/s;0.277777777778
 LapDist;m;sLap;m;1
 Alt;m;zTrack;m;1
-Clutch;1;rClutch;1;1LFspeed;m/s;vWheelFL;m/s;1
+Clutch;1;rClutch;1;1
+LFspeed;m/s;vWheelFL;m/s;1
 RFspeed;m/s;vWheelFR;m/s;1
 LRspeed;m/s;vWheelRL;m/s;1
 RRspeed;m/s;vWheelRR;m/s;1
