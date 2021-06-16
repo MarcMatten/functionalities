@@ -37,7 +37,7 @@ class RTDB:
 
         if not BSnapshot:
             self.BSnapshotMode = False
-            self.car = Car.Car('default', 'default')
+            self.car = Car.Car(name='default', carPath='default')
             self.car.load(self.dir + '/data/car/default.json')
             self.track = Track.Track('default')
             self.track.load(self.dir + '/data/track/default.json')
