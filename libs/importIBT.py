@@ -16,6 +16,7 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
     c['CarSetup'] = ir['CarSetup']
     c['DriverInfo'] = ir['DriverInfo']
     c['WeekendInfo'] = ir['WeekendInfo']
+    c['carPath'] = c['DriverInfo']['Drivers'][c['DriverInfo']['DriverCarIdx']]['CarPath']
 
     ir.shutdown()
 

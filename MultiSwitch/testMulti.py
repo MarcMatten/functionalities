@@ -279,7 +279,7 @@ myRTDB = RTDB.RTDB()
 myRTDB.initialise(calcData, False, False)
 myRTDB.initialise(iDDUControlsNameInit, False, False)
 
-myRTDB.car = Car.Car('name')
+myRTDB.car = Car.Car('name', 'path')
 # myRTDB.car.load('C:/Users/Marc/Documents/Projekte/iDDU/data/car/Porsche 718 Cayman GT4.json')
 myRTDB.car.load('C:/Users/Marc/Documents/Projekte/iDDU/data/car/Ferrari 488 GTE.json')
 
