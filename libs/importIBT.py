@@ -66,11 +66,11 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
         indices = []
         if lap in ['f', 'F', 'fastest', 'Fastest', 'FASTERST']:  # fastest lap only
             # find the fastest lap
-            print('\t\t\t\tImporting fastest lap.')
+            print('\tImporting fastest lap.')
             NLapStartIndex = scipy.signal.find_peaks(1 - np.array(temp['LapDistPct']), height=(0.98, 1.02), distance=600)
 
             if len(NLapStartIndex[0]) > 1:
-                print('\t\t\t\tFound following laps:')
+                print('\tFound following laps:')
                 tLap = []
                 NLap = []
                 sLap = []
@@ -81,7 +81,7 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
                     sLap.append(temp['LapDist'][NLapStartIndex[0][q+1]-1])
                     NLap.append(temp['Lap'][NLapStartIndex[0][q]])
                     VFuelLap.append(temp['FuelLevel'][NLapStartIndex[0][q]] - temp['FuelLevel'][NLapStartIndex[0][q+1]-1])
-                    print('\t\t\t\t\t{0}\t\t{1} min\t\t{2} l'.format(NLap[q], convertString.convertTimeMMSSsss(tLap[q]), convertString.convertTimeMMSSsss(VFuelLap[q])))
+                    print('\t{0}\t{1} min\t{2} l'.format(NLap[q], convertString.convertTimeMMSSsss(tLap[q]), convertString.convertTimeMMSSsss(VFuelLap[q])))
 
                 for r in range(0, len(tLap)):
                     if sLap[r] < float(c['WeekendInfo']['TrackLength'].split(' ')[0]) * 1000 * 0.95:
@@ -93,10 +93,10 @@ def importIBT(ibtPath, channels=None, lap=None, channelMapPath='iRacingChannelMa
                 # get all indices for the fastest lap
                 indices = np.argwhere(temp['Lap'] == NLapFastest)[:, 0]
 
-                print('\t\t\t\tImporting Lap {} ({})'.format(NLapFastest, convertString.convertTimeMMSSsss(min(tLap))))
+                print('\tImporting Lap {} ({})'.format(NLapFastest, convertString.convertTimeMMSSsss(min(tLap))))
 
             else:
-                print('\t\t\t\tNo valid lap found!')
+                print('\tNo valid lap found!')
                 return None, None
 
         # lap number
