@@ -12,12 +12,12 @@ def convertTimeMMSSsss(sec):
         m, s = divmod(sec, 60)
 
         if m == 0:
-            return sign + '{0:.3f}'.format(np.round(s, 3))
+            return sign + '{0:.3f}'.format(np.round(s-0.0005, 3))
         else:
             if s < 10:
-                return sign + str(int(m)) + ':' + '0' + '{0:.3f}'.format(np.round(s, 3))
+                return sign + str(int(m)) + ':' + '0' + '{0:.3f}'.format(np.round(s-0.0005, 3))
             else:
-                return sign + str(int(m)) + ':' + '{0:.3f}'.format(np.round(s, 3))
+                return sign + str(int(m)) + ':' + '{0:.3f}'.format(np.round(s-0.0005, 3))
     else:
         return '00:00,000'
 
