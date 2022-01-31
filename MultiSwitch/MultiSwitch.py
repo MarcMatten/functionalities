@@ -3,6 +3,7 @@ import time
 from functionalities.libs import importExport
 from libs.IDDU import IDDUItem, IDDUThread
 
+
 class MultiSwitchItem(IDDUItem):
     NButtonIncMap = 23
     NButtonDecMap = 22
@@ -169,14 +170,14 @@ class MultiSwitch(MultiSwitchThread):
 
             if not dcList[i] in self.dcIgnoreList:
 
-                if not dcList[i] in self.dcConfig:
-                    n = len(self.dcConfig)
+                if not dcList[i] in IDDUItem.dcConfig:
+                    n = len(IDDUItem.dcConfig)
                     IDDUItem.dcConfig[dcList[i]] = [2*n, 2*n+1]
 
                 if self.db.car.dcList[dcList[i]][1]:
                     self.addMapping(dcList[i])
 
-        importExport.saveJson(self.dcConfig, self.db.dir + '/data/configs/multi.json')
+        importExport.saveJson(IDDUItem.dcConfig, self.db.dir + '/data/configs/multi.json')
 
         self.mapDDUList = list(self.mapDDU.keys())
         self.mapIRList = list(self.mapIR.keys())
@@ -216,7 +217,7 @@ class MultiSwitchMapiRControl(MultiSwitchItem):
             self.step = step
 
     def increase(self):
-        self.pressButton(self.dcConfig[self.name][1]+1, 0.05)
+        self.pressButton(IDDUItem.dcConfig[self.name][1]+1, 0.05)
 
     def decrease(self):
-        self.pressButton(self.dcConfig[self.name][0]+1, 0.05)
+        self.pressButton(IDDUItem.dcConfig[self.name][0]+1, 0.05)
