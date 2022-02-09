@@ -10,7 +10,7 @@ class MultiSwitchItem(IDDUItem):
     NButtonIncValue = 9
     NButtonDecValue = 8
 
-    dcIgnoreList = ['dcHeadlightFlash', 'dcPitSpeedLimiterToggle', 'dcStarter', 'dcTractionControlToggle', 'dcTearOffVisor', 'dcPushToPass', 'dcDashPage']
+    dcIgnoreList = ['dcHeadlightFlash', 'dcPitSpeedLimiterToggle', 'dcStarter', 'dcTractionControlToggle', 'dcTearOffVisor', 'dcPushToPass', 'dcDashPage', 'dcToggleWindshieldWipers', 'dcTriggerWindshieldWipers']
 
     def __init__(self):
         IDDUItem.__init__(self)
